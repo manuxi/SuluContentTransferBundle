@@ -1,0 +1,52 @@
+{
+    "title": {"type": "text_line"},
+    "url": {"type": "page_tree_route"},
+    "image": {"type": "media_picker"},
+    "body": {"type": "text_editor"},
+    "intro": {"type": "text_area"},
+    "cta": {"type": "link"},
+    "gallery": {"type": "media_selection"},
+    "heroImage": {"type": "single_media_selection"},
+    "relatedPages": {"type": "page_selection"},
+    "mainPage": {"type": "single_page_selection"},
+    "relatedArticles": {"type": "article_selection"},
+    "mainArticle": {"type": "single_article_selection"},
+    "snippets": {"type": "snippet_selection"},
+    "mainSnippet": {"type": "single_snippet_selection"},
+    "topics": {"type": "category_selection"},
+    "mainTopic": {"type": "single_category_selection"},
+    "keywords": {"type": "tag_selection"},
+    "reviewers": {"type": "contact_selection"},
+    "mainContact": {"type": "single_contact_selection"},
+    "organisations": {"type": "account_selection"},
+    "mainOrganisation": {"type": "single_account_selection"},
+    "contactsAndAccounts": {"type": "contact_account_selection"},
+    "folders": {"type": "collection_selection"},
+    "mainFolder": {"type": "single_collection_selection"},
+    "teasers": {"type": "teaser_selection"},
+    "articleListing": {"type": "smart_content", "params": {"provider": "articles"}},
+    "pageListing": {"type": "smart_content", "params": {"provider": "pages"}},
+    "mediaListing": {"type": "smart_content", "params": {"provider": "media"}},
+    "sections": {
+        "type": "block",
+        "types": {
+            "text-image": {
+                "sectionTitle": {"type": "text_line"},
+                "sectionText": {"type": "text_editor"},
+                "sectionImage": {"type": "single_media_selection"}
+            },
+            "gallery": {
+                "images": {"type": "media_selection"},
+                "target": {"type": "link"},
+                "inner": {
+                    "type": "block",
+                    "types": {
+                        "item": {
+                            "itemImage": {"type": "single_media_selection"}
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
