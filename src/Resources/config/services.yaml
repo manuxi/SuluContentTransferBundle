@@ -1,0 +1,46 @@
+services:
+    sulu_content_transfer.instance_identity:
+        class: Manuxi\SuluContentTransferBundle\Instance\InstanceIdentity
+        arguments:
+            - '%kernel.secret%'
+            - '%sulu_content_transfer.instance_id%'
+            - '%sulu_content_transfer.instance_label%'
+            - '@?request_stack'
+
+    Manuxi\SuluContentTransferBundle\Instance\InstanceIdentity:
+        alias: sulu_content_transfer.instance_identity
+
+    sulu_content_transfer.package_limits:
+        class: Manuxi\SuluContentTransferBundle\Package\PackageLimits
+        arguments:
+            - '%sulu_content_transfer.limits.max_package_size%'
+            - '%sulu_content_transfer.limits.max_files%'
+
+    Manuxi\SuluContentTransferBundle\Package\PackageLimits:
+        alias: sulu_content_transfer.package_limits
+
+    sulu_content_transfer.work_directory:
+        class: Manuxi\SuluContentTransferBundle\Package\WorkDirectory
+        arguments:
+            - '%sulu_content_transfer.work_dir%'
+
+    Manuxi\SuluContentTransferBundle\Package\WorkDirectory:
+        alias: sulu_content_transfer.work_directory
+
+    sulu_content_transfer.package_reader:
+        class: Manuxi\SuluContentTransferBundle\Package\PackageReader
+        arguments:
+            - '@sulu_content_transfer.package_limits'
+            - '@sulu_content_transfer.work_directory'
+
+    Manuxi\SuluContentTransferBundle\Package\PackageReader:
+        alias: sulu_content_transfer.package_reader
+
+    sulu_content_transfer.package_writer:
+        class: Manuxi\SuluContentTransferBundle\Package\PackageWriter
+        arguments:
+            - '@sulu_content_transfer.package_limits'
+            - '@sulu_content_transfer.work_directory'
+
+    Manuxi\SuluContentTransferBundle\Package\PackageWriter:
+        alias: sulu_content_transfer.package_writer
