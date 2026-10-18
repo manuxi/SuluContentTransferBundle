@@ -1,0 +1,35 @@
+{
+    "name": "manuxi/sulu-content-transfer-bundle",
+    "description": "Export and import of Sulu content (articles) between Sulu systems as a single package file.",
+    "type": "symfony-bundle",
+    "homepage": "https://github.com/manuxi/SuluContentTransferBundle",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "ext-zip": "*",
+        "sulu/sulu": "^3.0",
+        "symfony/config": "^6.4 | ^7.0",
+        "symfony/dependency-injection": "^6.4 | ^7.0",
+        "symfony/http-foundation": "^6.4 | ^7.0",
+        "symfony/http-kernel": "^6.4 | ^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 | ^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Manuxi\SuluContentTransferBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Manuxi\SuluContentTransferBundle\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "@phpunit"
+        ],
+        "phpunit": "vendor/bin/phpunit"
+    }
+}
