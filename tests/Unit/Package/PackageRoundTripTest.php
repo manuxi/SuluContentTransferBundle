@@ -205,4 +205,16 @@ class PackageRoundTripTest extends TemporaryDirectoryTestCase
         $this->assertFileDoesNotExist($this->directory.'/b.zip');
         $this->assertSame([], glob($this->directory.'/*.part') ?: []);
     }
+
+    public function testWritingIntoAMissingDirectoryIsReported(): void
+    {
+        ['package' => $package, 'mediaFiles' => $mediaFiles] = PackageFixtures::package($this->directory);
+
+        try {
+            $this->writer->writeToFile($package, $this->directory.'/missing/out.zip', $mediaFiles);
+            $this->fail('A missing directory must be reported.');
+        } catch (\Manuxi\SuluContentTransferBundle\Exception\ContentTransferException $exception) {
+            $this->assertSame('package.not_writable', $exception->getReason());
+        }
+    }
 }

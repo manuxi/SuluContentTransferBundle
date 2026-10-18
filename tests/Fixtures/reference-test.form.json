@@ -1,0 +1,52 @@
+{
+    "template": "reference-test",
+    "title": "Transfer test",
+    "locale": "en",
+    "mainWebspace": "your_webspace",
+    "author": 3,
+    "url": {"page": {"uuid": "11111111-1111-4111-8111-111111111111", "path": "/articles"}, "suffix": "/transfer-test"},
+    "image": {"id": 210},
+    "body": "<p>See <sulu-link provider=\"page\" href=\"22222222-2222-4222-8222-222222222222\" target=\"_self\">the page</sulu-link>, <sulu-link href=\"33333333-3333-4333-8333-333333333333\" provider=\"article\">the article</sulu-link>, <sulu-link provider=\"media\" href=\"208\">the file</sulu-link>, again <sulu-link provider='page' href='22222222-2222-4222-8222-222222222222'>the page</sulu-link> and an <sulu-link provider=\"external\" href=\"https://example.org\">external link</sulu-link>.</p>",
+    "intro": "<sulu-link provider=\"page\" href=\"44444444-4444-4444-8444-444444444444\">not a rich text field, ignored</sulu-link>",
+    "cta": {"provider": "page", "href": "55555555-5555-4555-8555-555555555555", "target": "_self"},
+    "gallery": {"ids": [207, 208], "displayOption": "left"},
+    "heroImage": {"id": 209, "displayOption": null},
+    "relatedPages": ["22222222-2222-4222-8222-222222222222", "55555555-5555-4555-8555-555555555555"],
+    "mainPage": "22222222-2222-4222-8222-222222222222",
+    "relatedArticles": ["33333333-3333-4333-8333-333333333333"],
+    "mainArticle": "33333333-3333-4333-8333-333333333333",
+    "snippets": ["66666666-6666-4666-8666-666666666666"],
+    "mainSnippet": "66666666-6666-4666-8666-666666666666",
+    "topics": [248],
+    "mainTopic": 247,
+    "keywords": [168],
+    "reviewers": [2, 3],
+    "mainContact": 3,
+    "organisations": [1],
+    "mainOrganisation": 1,
+    "contactsAndAccounts": ["c2", "a1", "x9", "cNaN"],
+    "folders": [26],
+    "mainFolder": 27,
+    "teasers": {"presentAs": "two-columns", "items": [{"id": "22222222-2222-4222-8222-222222222222", "type": "pages"}, {"id": "33333333-3333-4333-8333-333333333333", "type": "articles"}, {"id": "x", "type": "events"}]},
+    "articleListing": {"categories": [248], "tags": ["transfer", "export"], "dataSource": "ignored-for-articles", "limitResult": 3},
+    "pageListing": {"dataSource": "22222222-2222-4222-8222-222222222222", "categories": [247], "tags": []},
+    "mediaListing": {"dataSource": 26, "includeSubFolders": true},
+    "excerpt": {
+        "title": "Transfer test",
+        "image": {"id": 208},
+        "icon": {"id": 207},
+        "description": "<p><sulu-link provider=\"page\" href=\"22222222-2222-4222-8222-222222222222\">page</sulu-link></p>"
+    },
+    "excerptCategories": [248],
+    "excerptTags": [168, 169],
+    "excerptAudienceTargetGroups": [4],
+    "seo": {"title": "x"},
+    "sections": [
+        {"type": "text-image", "sectionTitle": "Prepare", "sectionText": "<p><sulu-link provider=\"page\" href=\"55555555-5555-4555-8555-555555555555\">portfolio</sulu-link></p>", "sectionImage": {"id": 207}},
+        {"type": "gallery", "images": {"ids": [209, 210]}, "target": {"provider": "article", "href": "33333333-3333-4333-8333-333333333333"}, "inner": [
+            {"type": "item", "itemImage": {"id": 208}},
+            {"type": "item", "itemImage": {"id": null}}
+        ]},
+        {"type": "removed-type", "sectionImage": {"id": 999}}
+    ]
+}

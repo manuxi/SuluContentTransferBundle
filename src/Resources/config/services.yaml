@@ -44,3 +44,58 @@ services:
 
     Manuxi\SuluContentTransferBundle\Package\PackageWriter:
         alias: sulu_content_transfer.package_writer
+
+    # --- export
+
+    Manuxi\SuluContentTransferBundle\Instance\VersionInfo:
+        factory: ['Manuxi\SuluContentTransferBundle\Instance\VersionInfo', 'detect']
+
+    Manuxi\SuluContentTransferBundle\Reference\TemplateSchemaProvider:
+        arguments:
+            - '@sulu_admin.metadata_provider_registry'
+
+    Manuxi\SuluContentTransferBundle\Reference\ReferenceScanner: ~
+
+    Manuxi\SuluContentTransferBundle\Reference\SuluReferenceMerger: ~
+
+    Manuxi\SuluContentTransferBundle\Reference\SuluReferenceSource:
+        arguments:
+            - '@sulu_content.content_view_resolver'
+
+    Manuxi\SuluContentTransferBundle\Export\DoctrineLookupSource:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
+    Manuxi\SuluContentTransferBundle\Export\LookupSource:
+        alias: Manuxi\SuluContentTransferBundle\Export\DoctrineLookupSource
+
+    Manuxi\SuluContentTransferBundle\Export\ReferenceLookupBuilder:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Export\LookupSource'
+
+    Manuxi\SuluContentTransferBundle\Export\MediaExporter:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_media.storage'
+
+    Manuxi\SuluContentTransferBundle\Export\ArticleExporter:
+        arguments:
+            - '@sulu_article.article_repository'
+            - '@sulu_content.content_manager'
+            - '@serializer'
+            - '@Manuxi\SuluContentTransferBundle\Reference\TemplateSchemaProvider'
+            - '@Manuxi\SuluContentTransferBundle\Reference\ReferenceScanner'
+            - '@Manuxi\SuluContentTransferBundle\Reference\SuluReferenceSource'
+            - '@Manuxi\SuluContentTransferBundle\Reference\SuluReferenceMerger'
+            - '@Manuxi\SuluContentTransferBundle\Export\ReferenceLookupBuilder'
+            - '@Manuxi\SuluContentTransferBundle\Export\MediaExporter'
+            - '@sulu_content_transfer.instance_identity'
+            - '@Manuxi\SuluContentTransferBundle\Instance\VersionInfo'
+            - '@sulu_content_transfer.work_directory'
+
+    Manuxi\SuluContentTransferBundle\Command\ExportCommand:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Export\ArticleExporter'
+            - '@sulu_content_transfer.package_writer'
+        tags:
+            - { name: console.command }
