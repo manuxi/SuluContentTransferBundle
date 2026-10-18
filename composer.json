@@ -18,12 +18,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Manuxi\SuluContentTransferBundle\\": "src/"
+            "Manuxi\\SuluContentTransferBundle\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Manuxi\SuluContentTransferBundle\Tests\\": "tests/"
+            "Manuxi\\SuluContentTransferBundle\\Tests\\": "tests/"
         }
     },
     "scripts": {
