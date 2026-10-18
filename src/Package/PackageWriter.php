@@ -29,8 +29,9 @@ class PackageWriter
     public function writeToFile(Package $package, string $targetFile, array $mediaFiles = []): void
     {
         $directory = \dirname($targetFile);
-        if (!is_dir($directory) || !is_writable($directory)) {
-            throw new ContentTransferException('The directory for the package file does not exist or is not writable.', 'package.not_writable');
+        // no is_writable() here: on Windows it reports false for writable network drives. A real write failure is reported below.
+        if (!is_dir($directory)) {
+            throw new ContentTransferException('The directory for the package file does not exist.', 'package.not_writable');
         }
 
         $temporary = $targetFile.'.'.bin2hex(random_bytes(4)).'.part';
