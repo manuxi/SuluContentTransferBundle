@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluContentTransferBundle\Entity;
 
-use Manuxi\SuluContentTransferBundle\Repository\TransferMappingRepository;
-
 /**
  * Remembers which thing on this system was created from which thing of another system, so a later import of the
  * same source finds it again and can tell whether it was changed here in the meantime.

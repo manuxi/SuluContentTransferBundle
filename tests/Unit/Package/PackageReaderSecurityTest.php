@@ -403,7 +403,7 @@ class PackageReaderSecurityTest extends TemporaryDirectoryTestCase
     }
 
     /**
-     * @param array<string, string>      $entries    path => content, written exactly as given
+     * @param array<string, string>              $entries    path => content, written exactly as given
      * @param (callable(\ZipArchive): void)|null $afterwards
      */
     private function zip(array $entries, ?callable $afterwards = null): string

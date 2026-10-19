@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Manuxi\SuluContentTransferBundle\Tests\Unit\Import;
 
 use Manuxi\SuluContentTransferBundle\Entity\TransferMapping;
-use Manuxi\SuluContentTransferBundle\Format\ArticleEntry;
 use Manuxi\SuluContentTransferBundle\Format\Manifest;
 use Manuxi\SuluContentTransferBundle\Format\ManifestOptions;
 use Manuxi\SuluContentTransferBundle\Format\ManifestSource;

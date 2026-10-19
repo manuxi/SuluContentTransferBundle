@@ -12,9 +12,9 @@ namespace Manuxi\SuluContentTransferBundle\Format;
 final class ArticleDimension
 {
     /**
-     * @param 'live'|'draft'           $stage       version the data was taken from
-     * @param bool                     $published   whether the source had a published version of this language
-     * @param array<int|string, mixed> $data        admin normal form
+     * @param 'live'|'draft'           $stage     version the data was taken from
+     * @param bool                     $published whether the source had a published version of this language
+     * @param array<int|string, mixed> $data      admin normal form
      */
     public function __construct(
         public readonly string $locale,

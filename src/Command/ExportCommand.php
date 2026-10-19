@@ -80,7 +80,7 @@ TXT);
         $imageNote = $request->includeMediaFiles ? 'files in the package' : 'only named, files not included';
         $io->definitionList(
             ['Images' => \sprintf('%d (%s, %s)', $result->mediaCount(), self::formatBytes($result->mediaBytes()), $imageNote)],
-            ['References' => [] === $result->referenceCount ? 'none' : implode(', ', array_map(static fn (string $kind, int $count): string => $kind . ' ' . $count, array_keys($result->referenceCount), $result->referenceCount))],
+            ['References' => [] === $result->referenceCount ? 'none' : implode(', ', array_map(static fn (string $kind, int $count): string => $kind.' '.$count, array_keys($result->referenceCount), $result->referenceCount))],
             ['Package' => $target],
             ['Package size' => self::formatBytes((int) filesize($target))],
         );
@@ -129,18 +129,18 @@ TXT);
             return $option;
         }
 
-        return (getcwd() ?: '.') . \DIRECTORY_SEPARATOR . ExportFileName::for($articles);
+        return (getcwd() ?: '.').\DIRECTORY_SEPARATOR.ExportFileName::for($articles);
     }
 
     private static function formatBytes(int $bytes): string
     {
         if ($bytes < 1024) {
-            return $bytes . ' B';
+            return $bytes.' B';
         }
         if ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 1) . ' KiB';
+            return round($bytes / 1024, 1).' KiB';
         }
 
-        return round($bytes / 1024 / 1024, 1) . ' MiB';
+        return round($bytes / 1024 / 1024, 1).' MiB';
     }
 }

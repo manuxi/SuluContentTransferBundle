@@ -100,7 +100,7 @@ final class ReferenceScanner
 
         $unique = [];
         foreach ($found as $reference) {
-            $unique[$reference->path . '|' . $reference->resourceKey . '|' . $reference->id] = $reference;
+            $unique[$reference->path.'|'.$reference->resourceKey.'|'.$reference->id] = $reference;
         }
         $references = array_values($unique);
         usort($references, ArticleReference::compare(...));
@@ -124,7 +124,7 @@ final class ReferenceScanner
         foreach (['excerptCategories' => self::CATEGORIES, 'excerptTags' => self::TAGS, 'excerptAudienceTargetGroups' => self::TARGET_GROUPS] as $field => $resourceKey) {
             foreach (self::listOf($data[$field] ?? null) as $index => $id) {
                 if (self::isId($id)) {
-                    $found[] = new ArticleReference($locale, $field . '.' . $index, $resourceKey, $id);
+                    $found[] = new ArticleReference($locale, $field.'.'.$index, $resourceKey, $id);
                 }
             }
         }
@@ -134,7 +134,7 @@ final class ReferenceScanner
             foreach (['image', 'icon'] as $field) {
                 $value = $excerpt[$field] ?? null;
                 if (\is_array($value) && self::isId($value['id'] ?? null)) {
-                    $found[] = new ArticleReference($locale, 'excerpt.' . $field . '.id', self::MEDIA, $value['id']);
+                    $found[] = new ArticleReference($locale, 'excerpt.'.$field.'.id', self::MEDIA, $value['id']);
                 }
             }
             if (\is_string($excerpt['description'] ?? null)) {
@@ -160,7 +160,7 @@ final class ReferenceScanner
                 continue;
             }
 
-            $this->scanValue($locale, $prefix . $name, $data[$name], $spec, $schema, $name, $found);
+            $this->scanValue($locale, $prefix.$name, $data[$name], $spec, $schema, $name, $found);
         }
     }
 
@@ -181,7 +181,7 @@ final class ReferenceScanner
         if (isset(self::LIST_TYPES[$type])) {
             foreach (self::listOf($value) as $index => $id) {
                 if (self::isId($id)) {
-                    $found[] = new ArticleReference($locale, $path . '.' . $index, self::LIST_TYPES[$type], $id);
+                    $found[] = new ArticleReference($locale, $path.'.'.$index, self::LIST_TYPES[$type], $id);
                 }
             }
 
@@ -199,10 +199,10 @@ final class ReferenceScanner
         switch ($type) {
             case 'media_selection':
                 $ids = \is_array($value) && \array_key_exists('ids', $value) ? $value['ids'] : $value;
-                $idsPath = \is_array($value) && \array_key_exists('ids', $value) ? $path . '.ids' : $path;
+                $idsPath = \is_array($value) && \array_key_exists('ids', $value) ? $path.'.ids' : $path;
                 foreach (self::listOf($ids) as $index => $id) {
                     if (self::isId($id)) {
-                        $found[] = new ArticleReference($locale, $idsPath . '.' . $index, self::MEDIA, $id);
+                        $found[] = new ArticleReference($locale, $idsPath.'.'.$index, self::MEDIA, $id);
                     }
                 }
 
@@ -211,7 +211,7 @@ final class ReferenceScanner
             case 'single_media_selection':
             case 'media_picker': // field type of a third-party bundle: {"id": 12}, same shape as single_media_selection
                 if (\is_array($value) && self::isId($value['id'] ?? null)) {
-                    $found[] = new ArticleReference($locale, $path . '.id', self::MEDIA, $value['id']);
+                    $found[] = new ArticleReference($locale, $path.'.id', self::MEDIA, $value['id']);
                 }
 
                 return;
@@ -219,7 +219,7 @@ final class ReferenceScanner
             case 'contact_account_selection': // ["c12", "a3"]
                 foreach (self::listOf($value) as $index => $id) {
                     if (\is_string($id) && 1 === preg_match('/^([ca])([0-9]+)$/', $id, $match)) {
-                        $found[] = new ArticleReference($locale, $path . '.' . $index, 'c' === $match[1] ? self::CONTACTS : self::ACCOUNTS, (int) $match[2]);
+                        $found[] = new ArticleReference($locale, $path.'.'.$index, 'c' === $match[1] ? self::CONTACTS : self::ACCOUNTS, (int) $match[2]);
                     }
                 }
 
@@ -248,7 +248,7 @@ final class ReferenceScanner
                 foreach (self::listOf($items) as $index => $item) {
                     $teaserType = \is_array($item) ? ($item['type'] ?? null) : null;
                     if (\is_array($item) && \is_string($teaserType) && isset(self::TEASER_TYPES[$teaserType]) && self::isId($item['id'] ?? null)) {
-                        $found[] = new ArticleReference($locale, $path . '.items.' . $index . '.id', self::TEASER_TYPES[$teaserType], $item['id']);
+                        $found[] = new ArticleReference($locale, $path.'.items.'.$index.'.id', self::TEASER_TYPES[$teaserType], $item['id']);
                     }
                 }
 
@@ -256,7 +256,7 @@ final class ReferenceScanner
 
             case 'page_tree_route': // the parent page of an address
                 if (\is_array($value) && \is_array($value['page'] ?? null) && self::isId($value['page']['uuid'] ?? null)) {
-                    $found[] = new ArticleReference($locale, $path . '.page.uuid', self::PAGES, $value['page']['uuid']);
+                    $found[] = new ArticleReference($locale, $path.'.page.uuid', self::PAGES, $value['page']['uuid']);
                 }
 
                 return;
@@ -279,7 +279,7 @@ final class ReferenceScanner
             }
 
             /** @var array<string, mixed> $block */
-            $this->scanFields($locale, $block, $blockSchema, $path . '.' . $index . '.', $found);
+            $this->scanFields($locale, $block, $blockSchema, $path.'.'.$index.'.', $found);
         }
     }
 
@@ -292,7 +292,7 @@ final class ReferenceScanner
             return;
         }
 
-        if (1 > preg_match_all('/<sulu-link\b([^>]*)>/i', $text, $tags)) {
+        if (preg_match_all('/<sulu-link\b([^>]*)>/i', $text, $tags) < 1) {
             return;
         }
 
@@ -303,7 +303,7 @@ final class ReferenceScanner
                 continue;
             }
 
-            $found[] = new ArticleReference($locale, $path, self::LINK_PROVIDERS[$provider], self::LINK_PROVIDERS[$provider] === self::MEDIA && ctype_digit($href) ? (int) $href : $href);
+            $found[] = new ArticleReference($locale, $path, self::LINK_PROVIDERS[$provider], self::MEDIA === self::LINK_PROVIDERS[$provider] && ctype_digit($href) ? (int) $href : $href);
         }
     }
 
@@ -322,7 +322,7 @@ final class ReferenceScanner
         }
 
         $resourceKey = self::LINK_PROVIDERS[$value['provider']];
-        $found[] = new ArticleReference($locale, $path . '.href', $resourceKey, self::MEDIA === $resourceKey && \is_string($href) && ctype_digit($href) ? (int) $href : $href);
+        $found[] = new ArticleReference($locale, $path.'.href', $resourceKey, self::MEDIA === $resourceKey && \is_string($href) && ctype_digit($href) ? (int) $href : $href);
     }
 
     /**
@@ -338,20 +338,20 @@ final class ReferenceScanner
 
         foreach (self::listOf($value['categories'] ?? null) as $index => $id) {
             if (self::isId($id)) {
-                $found[] = new ArticleReference($locale, $path . '.categories.' . $index, self::CATEGORIES, $id);
+                $found[] = new ArticleReference($locale, $path.'.categories.'.$index, self::CATEGORIES, $id);
             }
         }
 
         // the tag filter stores the names of the tags, not their ids
         foreach (self::listOf($value['tags'] ?? null) as $index => $name) {
             if (\is_string($name) && '' !== $name) {
-                $found[] = new ArticleReference($locale, $path . '.tags.' . $index, self::TAGS, $name);
+                $found[] = new ArticleReference($locale, $path.'.tags.'.$index, self::TAGS, $name);
             }
         }
 
         $dataSource = $value['dataSource'] ?? null;
         if (null !== $provider && isset(self::DATA_SOURCES[$provider]) && self::isId($dataSource)) {
-            $found[] = new ArticleReference($locale, $path . '.dataSource', self::DATA_SOURCES[$provider], $dataSource);
+            $found[] = new ArticleReference($locale, $path.'.dataSource', self::DATA_SOURCES[$provider], $dataSource);
         }
     }
 
@@ -373,7 +373,7 @@ final class ReferenceScanner
 
     private static function attribute(string $attributes, string $name): ?string
     {
-        if (1 !== preg_match('/\b' . preg_quote($name, '/') . '\s*=\s*(?:"([^"]*)"|\'([^\']*)\')/i', $attributes, $match)) {
+        if (1 !== preg_match('/\b'.preg_quote($name, '/').'\s*=\s*(?:"([^"]*)"|\'([^\']*)\')/i', $attributes, $match)) {
             return null;
         }
 

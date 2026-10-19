@@ -172,7 +172,7 @@ class ImportAnalyzer
 
     /**
      * @param list<\Manuxi\SuluContentTransferBundle\Format\ArticleReference> $references
-     * @param list<PlanMedium>                                                 $media
+     * @param list<PlanMedium>                                                $media
      *
      * @return list<Notice>
      */

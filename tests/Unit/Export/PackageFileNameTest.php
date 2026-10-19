@@ -47,7 +47,7 @@ class PackageFileNameTest extends TestCase
 
     public function testLongNamesAreShortenedAndKeepTheirExtension(): void
     {
-        $name = PackageFileName::sanitize(str_repeat('ä', 200) . '.jpeg', 7);
+        $name = PackageFileName::sanitize(str_repeat('ä', 200).'.jpeg', 7);
 
         $this->assertLessThanOrEqual(255, \strlen($name));
         $this->assertStringEndsWith('.jpeg', $name);

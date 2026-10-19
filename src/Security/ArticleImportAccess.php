@@ -18,11 +18,11 @@ final class ArticleImportAccess
     public const DENIED_MEDIA = 'import.denied_media';
 
     /**
-     * @param list<string> $add          languages (of those the plan imports) in which the user may create articles of its group
-     * @param list<string> $edit         languages in which the user may edit articles of its group
-     * @param list<string> $live         languages in which the user may publish articles of its group
-     * @param bool         $mediaCreate  the user may create the new images and new file versions the article needs
-     * @param bool         $mediaTexts   the user may change the texts of the existing images the article uses
+     * @param list<string> $add         languages (of those the plan imports) in which the user may create articles of its group
+     * @param list<string> $edit        languages in which the user may edit articles of its group
+     * @param list<string> $live        languages in which the user may publish articles of its group
+     * @param bool         $mediaCreate the user may create the new images and new file versions the article needs
+     * @param bool         $mediaTexts  the user may change the texts of the existing images the article uses
      */
     public function __construct(
         public readonly array $add,

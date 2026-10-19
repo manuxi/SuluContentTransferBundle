@@ -23,7 +23,7 @@ class ReferenceScannerTest extends TestCase
     private static function fixture(string $name): array
     {
         /** @var array<string, mixed> $data */
-        $data = json_decode((string) file_get_contents(__DIR__ . '/../../Fixtures/' . $name), true, 512, \JSON_THROW_ON_ERROR);
+        $data = json_decode((string) file_get_contents(__DIR__.'/../../Fixtures/'.$name), true, 512, \JSON_THROW_ON_ERROR);
 
         return $data;
     }
@@ -35,7 +35,7 @@ class ReferenceScannerTest extends TestCase
      */
     private static function lines(array $references): array
     {
-        $lines = array_map(static fn (ArticleReference $r): string => $r->path . ' | ' . $r->resourceKey . ' | ' . $r->id, $references);
+        $lines = array_map(static fn (ArticleReference $r): string => $r->path.' | '.$r->resourceKey.' | '.$r->id, $references);
         sort($lines, \SORT_STRING);
 
         return $lines;
@@ -51,26 +51,26 @@ class ReferenceScannerTest extends TestCase
 
         $expected = [
             'author | contacts | 3',
-            'url.page.uuid | pages | ' . self::PARENT_PAGE,
+            'url.page.uuid | pages | '.self::PARENT_PAGE,
             'image.id | media | 210',
             // text editor: one entry per different link, the same link twice counts once; external links are ignored
-            'body | pages | ' . self::PAGE_A,
-            'body | articles | ' . self::ARTICLE,
+            'body | pages | '.self::PAGE_A,
+            'body | articles | '.self::ARTICLE,
             'body | media | 208',
             // link field
-            'cta.href | pages | ' . self::PAGE_B,
+            'cta.href | pages | '.self::PAGE_B,
             // media
             'gallery.ids.0 | media | 207',
             'gallery.ids.1 | media | 208',
             'heroImage.id | media | 209',
             // pages, articles, snippets
-            'relatedPages.0 | pages | ' . self::PAGE_A,
-            'relatedPages.1 | pages | ' . self::PAGE_B,
-            'mainPage | pages | ' . self::PAGE_A,
-            'relatedArticles.0 | articles | ' . self::ARTICLE,
-            'mainArticle | articles | ' . self::ARTICLE,
-            'snippets.0 | snippets | ' . self::SNIPPET,
-            'mainSnippet | snippets | ' . self::SNIPPET,
+            'relatedPages.0 | pages | '.self::PAGE_A,
+            'relatedPages.1 | pages | '.self::PAGE_B,
+            'mainPage | pages | '.self::PAGE_A,
+            'relatedArticles.0 | articles | '.self::ARTICLE,
+            'mainArticle | articles | '.self::ARTICLE,
+            'snippets.0 | snippets | '.self::SNIPPET,
+            'mainSnippet | snippets | '.self::SNIPPET,
             // categories, tags, contacts, accounts
             'topics.0 | categories | 248',
             'mainTopic | categories | 247',
@@ -86,29 +86,29 @@ class ReferenceScannerTest extends TestCase
             'folders.0 | collections | 26',
             'mainFolder | collections | 27',
             // teasers (only pages and articles are known kinds)
-            'teasers.items.0.id | pages | ' . self::PAGE_A,
-            'teasers.items.1.id | articles | ' . self::ARTICLE,
+            'teasers.items.0.id | pages | '.self::PAGE_A,
+            'teasers.items.1.id | articles | '.self::ARTICLE,
             // smart content: categories, tag names, data source by provider
             'articleListing.categories.0 | categories | 248',
             'articleListing.tags.0 | tags | transfer',
             'articleListing.tags.1 | tags | export',
             'pageListing.categories.0 | categories | 247',
-            'pageListing.dataSource | pages | ' . self::PAGE_A,
+            'pageListing.dataSource | pages | '.self::PAGE_A,
             'mediaListing.dataSource | collections | 26',
             // excerpt
             'excerpt.image.id | media | 208',
             'excerpt.icon.id | media | 207',
-            'excerpt.description | pages | ' . self::PAGE_A,
+            'excerpt.description | pages | '.self::PAGE_A,
             'excerptCategories.0 | categories | 248',
             'excerptTags.0 | tags | 168',
             'excerptTags.1 | tags | 169',
             'excerptAudienceTargetGroups.0 | target_groups | 4',
             // blocks, also nested ones; a removed block type and empty values are skipped
-            'sections.0.sectionText | pages | ' . self::PAGE_B,
+            'sections.0.sectionText | pages | '.self::PAGE_B,
             'sections.0.sectionImage.id | media | 207',
             'sections.1.images.ids.0 | media | 209',
             'sections.1.images.ids.1 | media | 210',
-            'sections.1.target.href | articles | ' . self::ARTICLE,
+            'sections.1.target.href | articles | '.self::ARTICLE,
             'sections.1.inner.0.itemImage.id | media | 208',
         ];
         sort($expected, \SORT_STRING);
@@ -123,7 +123,7 @@ class ReferenceScannerTest extends TestCase
     {
         $references = (new ReferenceScanner())->scan(
             'de',
-            ['intro' => '<sulu-link provider="page" href="' . self::PAGE_A . '">x</sulu-link>'],
+            ['intro' => '<sulu-link provider="page" href="'.self::PAGE_A.'">x</sulu-link>'],
             TemplateSchema::fromArray(['intro' => ['type' => 'text_area']]),
         );
 
@@ -197,7 +197,7 @@ class ReferenceScannerTest extends TestCase
     public function testResultIsSortedAndFreeOfDuplicates(): void
     {
         $scanner = new ReferenceScanner();
-        $data = ['b' => self::PAGE_A, 'a' => self::PAGE_A, 'body' => '<sulu-link provider="page" href="' . self::PAGE_A . '"></sulu-link><sulu-link provider="page" href="' . self::PAGE_A . '"></sulu-link>'];
+        $data = ['b' => self::PAGE_A, 'a' => self::PAGE_A, 'body' => '<sulu-link provider="page" href="'.self::PAGE_A.'"></sulu-link><sulu-link provider="page" href="'.self::PAGE_A.'"></sulu-link>'];
         $schema = TemplateSchema::fromArray(['b' => ['type' => 'single_page_selection'], 'a' => ['type' => 'single_page_selection'], 'body' => ['type' => 'text_editor']]);
 
         $first = $scanner->scan('de', $data, $schema);

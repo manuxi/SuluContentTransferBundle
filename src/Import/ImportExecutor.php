@@ -194,8 +194,8 @@ class ImportExecutor
     // what is needed
 
     /**
-     * @param array<string, ArticleEntry>                                                                           $entries
-     * @param array<string, array{article: PlanArticle, action: string, locales: list<string>, target: string}>   $jobs
+     * @param array<string, ArticleEntry>                                                                       $entries
+     * @param array<string, array{article: PlanArticle, action: string, locales: list<string>, target: string}> $jobs
      *
      * @return array{media: array<int, true>, categories: array<string, true>, tags: list<string>}
      */

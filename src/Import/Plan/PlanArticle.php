@@ -31,19 +31,17 @@ final class PlanArticle
     public readonly array $copyUrls;
 
     /**
-     * @param array<string, string>   $titles         title per language
-     * @param string                  $state
-     * @param ?string                 $matchedBy      how the article on this system was found ("mapping", "uuid") or null
-     * @param ?string                 $targetId       UUID of the article on this system, if there is one
-     * @param string                  $defaultAction
-     * @param list<string>            $allowedActions
-     * @param array<int, PlanLocale>  $locales
-     * @param array<string, PlanUrl>  $urls           addresses for the actions "create" and "update"
-     * @param array<string, PlanUrl>  $copyUrls       addresses for the action "copy" (the original keeps its own)
-     * @param ?string                 $mainWebspace   webspace the article asks for in the package
-     * @param ?string                 $targetWebspace webspace the article gets on this system
-     * @param ?\DateTimeImmutable     $changedAt      when the article was last changed on this system (state "changed")
-     * @param ?string                 $changedBy      who changed it
+     * @param array<string, string>  $titles         title per language
+     * @param ?string                $matchedBy      how the article on this system was found ("mapping", "uuid") or null
+     * @param ?string                $targetId       UUID of the article on this system, if there is one
+     * @param list<string>           $allowedActions
+     * @param array<int, PlanLocale> $locales
+     * @param array<string, PlanUrl> $urls           addresses for the actions "create" and "update"
+     * @param array<string, PlanUrl> $copyUrls       addresses for the action "copy" (the original keeps its own)
+     * @param ?string                $mainWebspace   webspace the article asks for in the package
+     * @param ?string                $targetWebspace webspace the article gets on this system
+     * @param ?\DateTimeImmutable    $changedAt      when the article was last changed on this system (state "changed")
+     * @param ?string                $changedBy      who changed it
      */
     public function __construct(
         public readonly string $uuid,

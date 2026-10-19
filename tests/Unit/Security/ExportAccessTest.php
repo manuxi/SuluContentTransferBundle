@@ -123,8 +123,8 @@ class ExportAccessTest extends TestCase
 
     /**
      * @param array<string, array<string, string>> $templates
-     * @param list<string>                          $deniedContexts contexts without any permission
-     * @param list<string>                          $deniedLocales  languages without permission in every context
+     * @param list<string>                         $deniedContexts contexts without any permission
+     * @param list<string>                         $deniedLocales  languages without permission in every context
      */
     private function access(array $templates, array $deniedContexts, array $deniedLocales = []): ExportAccess
     {

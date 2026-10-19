@@ -55,7 +55,7 @@ final class MediaPlanner
     }
 
     /**
-     * @param ?array<string, mixed> $row   lookup row of the image
+     * @param ?array<string, mixed> $row    lookup row of the image
      * @param list<string>          $usedBy
      */
     private function planOne(int $id, ?MediaEntry $entry, ?array $row, string $sourceInstance, array $usedBy): PlanMedium

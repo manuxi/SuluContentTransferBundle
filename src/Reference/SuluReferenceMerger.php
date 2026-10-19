@@ -17,9 +17,9 @@ use Manuxi\SuluContentTransferBundle\Format\ArticleReference;
 final class SuluReferenceMerger
 {
     /**
-     * @param array<string, mixed>   $data    admin form of the article in this language
-     * @param list<ArticleReference> $scanned result of the scanner
-     * @param list<array{resolver: string, path: string, resourceKey: string, id: int|string}> $sulu references of Sulu
+     * @param array<string, mixed>                                                             $data    admin form of the article in this language
+     * @param list<ArticleReference>                                                           $scanned result of the scanner
+     * @param list<array{resolver: string, path: string, resourceKey: string, id: int|string}> $sulu    references of Sulu
      *
      * @return array{references: list<ArticleReference>, onlyInSulu: list<ArticleReference>}
      */
@@ -112,7 +112,7 @@ final class SuluReferenceMerger
                 return;
             }
             foreach ($value as $key => $item) {
-                self::collect($item, '' === $path ? (string) $key : $path . '.' . $key, $id, $found, $depth + 1);
+                self::collect($item, '' === $path ? (string) $key : $path.'.'.$key, $id, $found, $depth + 1);
             }
 
             return;
@@ -127,6 +127,6 @@ final class SuluReferenceMerger
 
     private static function key(string $path, string $resourceKey, int|string $id): string
     {
-        return $path . '|' . $resourceKey . '|' . $id;
+        return $path.'|'.$resourceKey.'|'.$id;
     }
 }

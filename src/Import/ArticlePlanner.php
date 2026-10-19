@@ -343,8 +343,6 @@ final class ArticlePlanner
     }
 
     /**
-     * @param string $state
-     *
      * @return array{0: string, 1: list<string>}
      */
     private function actions(bool $sameInstance, ?TargetArticle $target, string $state): array

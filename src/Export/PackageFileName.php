@@ -36,27 +36,27 @@ final class PackageFileName
 
         $extension = pathinfo($clean, \PATHINFO_EXTENSION);
         $stem = '' === $extension ? $clean : substr($clean, 0, -(\strlen($extension) + 1));
-        $stem = rtrim($stem, " .");
+        $stem = rtrim($stem, ' .');
 
         // a device name such as "nul.jpg" or the reserved "meta.json" gets a prefix
         $candidate = self::join($stem, $extension);
         if ('' === $stem || !PackagePath::isSafeFileName($candidate)) {
-            $stem = 'file-' . $mediaId . ('' === $stem ? '' : '-' . $stem);
+            $stem = 'file-'.$mediaId.('' === $stem ? '' : '-'.$stem);
             $candidate = self::join($stem, $extension);
         }
 
         if (\strlen($candidate) > self::MAX_BYTES) {
             $room = self::MAX_BYTES - ('' === $extension ? 0 : \strlen($extension) + 1);
-            $stem = rtrim(self::truncateUtf8($stem, max(1, $room)), " .");
+            $stem = rtrim(self::truncateUtf8($stem, max(1, $room)), ' .');
             $candidate = self::join($stem, $extension);
         }
 
-        return PackagePath::isSafeFileName($candidate) ? $candidate : 'file-' . $mediaId;
+        return PackagePath::isSafeFileName($candidate) ? $candidate : 'file-'.$mediaId;
     }
 
     private static function join(string $stem, string $extension): string
     {
-        return '' === $extension ? $stem : $stem . '.' . $extension;
+        return '' === $extension ? $stem : $stem.'.'.$extension;
     }
 
     private static function truncateUtf8(string $text, int $bytes): string

@@ -24,7 +24,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * POST /admin/api/content-transfer/export/preview   body: {"ids": [...], "locales": [...], "stage": "live"}   query: locale
- * POST /admin/api/content-transfer/export           body: {"ids": [...], "locales": [...], "stage": "live", "includeMediaFiles": true}
+ * POST /admin/api/content-transfer/export           body: {"ids": [...], "locales": [...], "stage": "live", "includeMediaFiles": true}.
  *
  * The preview tells what an export of the selection would contain: the languages the articles have (and the user may
  * see), the images with their size, and the articles the selection links to but does not contain. The export answers

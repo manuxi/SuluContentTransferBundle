@@ -35,14 +35,14 @@ final class ImportPlan
     public readonly array $notices;
 
     /**
-     * @param array<string, mixed>   $options     the options of the package (locales, stage, includeMediaFiles)
-     * @param list<PlanArticle>      $articles
-     * @param list<PlanMedium>       $media
-     * @param list<PlanCategory>     $categories  categories that are created
-     * @param list<string>           $tags        names of tags that are created
-     * @param list<PlanResolution>   $resolutions
-     * @param list<Notice>           $notices
-     * @param bool                   $sameInstance the package comes from this very system
+     * @param array<string, mixed> $options      the options of the package (locales, stage, includeMediaFiles)
+     * @param list<PlanArticle>    $articles
+     * @param list<PlanMedium>     $media
+     * @param list<PlanCategory>   $categories   categories that are created
+     * @param list<string>         $tags         names of tags that are created
+     * @param list<PlanResolution> $resolutions
+     * @param list<Notice>         $notices
+     * @param bool                 $sameInstance the package comes from this very system
      */
     public function __construct(
         public readonly string $token,

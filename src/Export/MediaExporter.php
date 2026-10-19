@@ -47,7 +47,7 @@ class MediaExporter
                 continue;
             }
 
-            $target = rtrim($directory, '/\\') . \DIRECTORY_SEPARATOR . 'media-' . $id;
+            $target = rtrim($directory, '/\\').\DIRECTORY_SEPARATOR.'media-'.$id;
             [$size, $sha256] = $this->copyOriginal($fileVersion, $target, $id);
 
             $packageName = PackageFileName::sanitize($fileVersion->getName(), $id);

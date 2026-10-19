@@ -152,7 +152,7 @@ class DoctrineLookupSource implements LookupSource
         $rows = $this->entityManager->createQueryBuilder()
             ->select('r.uuid AS uuid', 'dc.locale AS locale', 'dc.title AS title', 'dc.templateKey AS templateKey')
             ->from($dimensionContentClass, 'dc')
-            ->join('dc.' . $association, 'r')
+            ->join('dc.'.$association, 'r')
             ->where('r.uuid IN (:uuids)')
             ->andWhere('dc.stage = :stage')
             ->andWhere('dc.version = :version')
