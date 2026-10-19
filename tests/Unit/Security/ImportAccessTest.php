@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluContentTransferBundle\Tests\Unit\Security;
 
 use Manuxi\SuluContentTransferBundle\Exception\ImportDeniedException;
+use Manuxi\SuluContentTransferBundle\Export\ArticleTemplates;
 use Manuxi\SuluContentTransferBundle\Format\ManifestSource;
 use Manuxi\SuluContentTransferBundle\Import\Execute\ImportDecisions;
 use Manuxi\SuluContentTransferBundle\Import\Plan\ArticleAction;
@@ -98,6 +99,46 @@ class ImportAccessTest extends TestCase
         $access = $this->access([$blog.'::'.PermissionTypes::EDIT])->describe($this->plan());
         $this->assertSame(ArticleImportAccess::DENIED_EDIT, $access[self::BLOG]->denial(ArticleAction::UPDATE, ['de'], [], false));
         $this->assertNull($access[self::BLOG]->denial(ArticleAction::CREATE, ['de'], [], false));
+    }
+
+    public function testUpdatingAlsoNeedsThePermissionInTheGroupOfTheArticleThatExistsHere(): void
+    {
+        // the package says "blog-post", but the article with this UUID is a FAQ article here and the user may not edit those
+        $faq = ArticleAdmin::getArticleSecurityContext('faq');
+        $present = [self::BLOG => ['de' => 'faq-question', 'en' => 'faq-question']];
+
+        $access = $this->access([$faq.'::'.PermissionTypes::EDIT], $present)->describe($this->plan());
+
+        $this->assertSame([], $access[self::BLOG]->edit);
+        $this->assertSame(ArticleImportAccess::DENIED_EDIT, $access[self::BLOG]->denial(ArticleAction::UPDATE, ['de'], [], false));
+        // nothing is written into the existing article by the other actions
+        $this->assertSame(['de', 'en'], $access[self::BLOG]->add);
+        $this->assertNull($access[self::BLOG]->denial(ArticleAction::COPY, ['de'], [], false));
+        // and the same article in its own group is no problem
+        $same = $this->access([$faq.'::'.PermissionTypes::EDIT], [self::BLOG => ['de' => 'blog-post']])->describe($this->plan());
+        $this->assertSame(['de', 'en'], $same[self::BLOG]->edit);
+    }
+
+    public function testPublishingAnExistingArticleNeedsTheLivePermissionInItsGroupToo(): void
+    {
+        $faq = ArticleAdmin::getArticleSecurityContext('faq');
+        $present = [self::BLOG => ['de' => 'faq-question']];
+
+        $access = $this->access([$faq.'::'.PermissionTypes::LIVE], $present)->describe($this->plan());
+
+        $this->assertSame([], $access[self::BLOG]->live);
+        $this->assertSame(ArticleImportAccess::DENIED_LIVE, $access[self::BLOG]->denial(ArticleAction::UPDATE, ['de'], ['de'], false));
+    }
+
+    public function testALanguageTheArticleLacksHereFollowsTheGroupOfItsOtherLanguages(): void
+    {
+        $faq = ArticleAdmin::getArticleSecurityContext('faq');
+        $present = [self::BLOG => ['de' => 'faq-question']];
+
+        // English is new on the existing article, which lives in the FAQ group
+        $access = $this->access([$faq.':en:'.PermissionTypes::EDIT], $present)->describe($this->plan());
+
+        $this->assertSame(['de'], $access[self::BLOG]->edit);
     }
 
     public function testALanguageWithoutPermissionDeniesOnlyWhenItIsImported(): void
@@ -219,9 +260,10 @@ class ImportAccessTest extends TestCase
     }
 
     /**
-     * @param list<string> $denied "context:locale:permission[:objectId]"; "*" matches everything, an empty part too
+     * @param list<string>                         $denied  "context:locale:permission[:objectId]"; "*" matches everything, an empty part too
+     * @param array<string, array<string, string>> $present templates of the articles that exist here: UUID => language => template key
      */
-    private function access(array $denied): ImportAccess
+    private function access(array $denied, array $present = []): ImportAccess
     {
         $checker = $this->createMock(SecurityCheckerInterface::class);
         $checker->method('hasPermission')->willReturnCallback(function (SecurityCondition $condition, string $permission) use ($denied): bool {
@@ -259,7 +301,19 @@ class ImportAccessTest extends TestCase
         $systemCollections = $this->createMock(SystemCollectionManagerInterface::class);
         $systemCollections->method('getSystemCollection')->willReturn(self::SYSTEM_FOLDER);
 
-        return new ImportAccess($checker, new ArticleSecurityContexts($provider), $collections, $systemCollections);
+        $templates = new class($present) implements ArticleTemplates {
+            /** @param array<string, array<string, string>> $present */
+            public function __construct(private readonly array $present)
+            {
+            }
+
+            public function templateKeys(array $uuids): array
+            {
+                return array_intersect_key($this->present, array_flip($uuids));
+            }
+        };
+
+        return new ImportAccess($checker, new ArticleSecurityContexts($provider), $collections, $systemCollections, $templates);
     }
 
     private function plan(bool $newVersion = false): ImportPlan

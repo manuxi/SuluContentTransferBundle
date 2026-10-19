@@ -293,6 +293,7 @@ services:
             - '@Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts'
             - '@Manuxi\SuluContentTransferBundle\Security\MediaCollectionLookup'
             - '@sulu_media.system_collections.manager'
+            - '@Manuxi\SuluContentTransferBundle\Export\ArticleTemplates'
 
     Manuxi\SuluContentTransferBundle\Import\PlanPresenter:
         arguments:
