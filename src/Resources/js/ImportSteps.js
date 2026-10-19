@@ -21,6 +21,9 @@ const dropZoneStyle = (active) => ({
 
 const hintStyle = {color: MUTED_COLOR, fontSize: 12, marginTop: 4};
 
+// the cells of the table do not wrap their content
+const cellStyle = {whiteSpace: 'normal', padding: '6px 0'};
+
 function ErrorMessage({error}) {
     if (!error) {
         return null;
@@ -41,56 +44,60 @@ function ErrorMessage({error}) {
 /**
  * Step 1: the editor picks the package file (drop area or file dialog).
  */
-export const FileStep = observer(function FileStep({store}) {
-    const {file, dragging, analyzing} = store;
-    const inputRef = React.useRef(null);
+export const FileStep = observer(class FileStep extends React.Component {
+    inputRef = React.createRef();
 
-    if (analyzing) {
-        return (
-            <div style={{textAlign: 'center', padding: '20px 0'}}>
-                <Loader />
-                <p>{translate(`${PREFIX}.import_checking`)}</p>
-            </div>
-        );
-    }
-
-    const handleKeyDown = (event) => {
+    handleKeyDown = (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            inputRef.current.click();
+            this.inputRef.current.click();
         }
     };
 
-    return (
-        <div>
-            <ErrorMessage error={store.error} />
-            <div
-                onClick={() => inputRef.current.click()}
-                onDragLeave={store.handleDragLeave}
-                onDragOver={store.handleDragOver}
-                onDrop={store.handleDrop}
-                onKeyDown={handleKeyDown}
-                role="button"
-                style={dropZoneStyle(dragging)}
-                tabIndex={0}
-            >
-                {file
-                    ? <strong>{file.name} ({formatBytes(file.size)})</strong>
-                    : <span>{translate(`${PREFIX}.import_drop`)}</span>
-                }
-                <div style={hintStyle}>
-                    {file ? translate(`${PREFIX}.import_drop_change`) : translate(`${PREFIX}.import_drop_hint`)}
+    render() {
+        const {store} = this.props;
+        const {file, dragging, analyzing} = store;
+
+        if (analyzing) {
+            return (
+                <div style={{textAlign: 'center', padding: '20px 0'}}>
+                    <Loader />
+                    <p>{translate(`${PREFIX}.import_checking`)}</p>
                 </div>
-                <input
-                    accept=".zip,application/zip"
-                    onChange={store.handleFileInput}
-                    ref={inputRef}
-                    style={{display: 'none'}}
-                    type="file"
-                />
+            );
+        }
+
+        return (
+            <div>
+                <ErrorMessage error={store.error} />
+                <div
+                    onClick={() => this.inputRef.current.click()}
+                    onDragLeave={store.handleDragLeave}
+                    onDragOver={store.handleDragOver}
+                    onDrop={store.handleDrop}
+                    onKeyDown={this.handleKeyDown}
+                    role="button"
+                    style={dropZoneStyle(dragging)}
+                    tabIndex={0}
+                >
+                    {file
+                        ? <strong>{file.name} ({formatBytes(file.size)})</strong>
+                        : <span>{translate(`${PREFIX}.import_drop`)}</span>
+                    }
+                    <div style={hintStyle}>
+                        {file ? translate(`${PREFIX}.import_drop_change`) : translate(`${PREFIX}.import_drop_hint`)}
+                    </div>
+                    <input
+                        accept=".zip,application/zip"
+                        onChange={store.handleFileInput}
+                        ref={this.inputRef}
+                        style={{display: 'none'}}
+                        type="file"
+                    />
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 });
 
 function articleStateText(article, sameInstance) {
@@ -113,19 +120,23 @@ function articleStateText(article, sameInstance) {
     return translate(article.matchedBy === 'mapping' ? `${PREFIX}.state_unchanged_import` : `${PREFIX}.state_unchanged`);
 }
 
-const ArticleRow = observer(function ArticleRow({article, store}) {
+function renderArticleRow(article, store) {
     const options = store.optionsFor(article);
     const action = store.effectiveAction(article);
     const reason = store.blockReason(article);
     const note = store.draftNote(article);
 
     return (
-        <Table.Row>
-            <Table.Cell>{article.title}</Table.Cell>
+        <Table.Row key={article.id}>
             <Table.Cell>
-                <div>{articleStateText(article, store.plan.package.sameInstance)}</div>
-                {reason && <div style={{color: ERROR_COLOR, fontSize: 12}}>{reason}</div>}
-                {note && <div style={hintStyle}>{note}</div>}
+                <div style={cellStyle}>{article.title}</div>
+            </Table.Cell>
+            <Table.Cell>
+                <div style={cellStyle}>
+                    <div>{articleStateText(article, store.plan.package.sameInstance)}</div>
+                    {reason && <div style={{color: ERROR_COLOR, fontSize: 12}}>{reason}</div>}
+                    {note && <div style={hintStyle}>{note}</div>}
+                </div>
             </Table.Cell>
             <Table.Cell>
                 <SingleSelect onChange={(value) => store.setAction(article.id, value)} value={action}>
@@ -138,7 +149,7 @@ const ArticleRow = observer(function ArticleRow({article, store}) {
             </Table.Cell>
         </Table.Row>
     );
-});
+}
 
 function NoticeList({notices, titles}) {
     const order = {error: 0, warning: 1, info: 2};
@@ -206,7 +217,7 @@ export const PreviewStep = observer(function PreviewStep({store}) {
 
             <p>
                 {translate(`${PREFIX}.package_info`, {
-                    source: plan.package.label,
+                    source: plan.package.label === 'cli' ? translate(`${PREFIX}.source_cli`) : plan.package.label,
                     date: formatDate(plan.package.createdAt),
                     articles: plan.articles.length,
                     languages: plan.locales.map(({locale}) => languageName(locale)).join(', '),
@@ -214,16 +225,18 @@ export const PreviewStep = observer(function PreviewStep({store}) {
             </p>
             {plan.package.sameInstance && <p style={{color: '#9a6700'}}>{translate(`${PREFIX}.notice_source_same_instance`)}</p>}
 
-            <Table>
-                <Table.Header>
-                    <Table.HeaderCell>{translate(`${PREFIX}.column_article`)}</Table.HeaderCell>
-                    <Table.HeaderCell>{translate(`${PREFIX}.column_state`)}</Table.HeaderCell>
-                    <Table.HeaderCell>{translate(`${PREFIX}.column_action`)}</Table.HeaderCell>
-                </Table.Header>
-                <Table.Body>
-                    {plan.articles.map((article) => <ArticleRow article={article} key={article.id} store={store} />)}
-                </Table.Body>
-            </Table>
+            <div style={{marginBottom: 24}}>
+                <Table>
+                    <Table.Header>
+                        <Table.HeaderCell>{translate(`${PREFIX}.column_article`)}</Table.HeaderCell>
+                        <Table.HeaderCell>{translate(`${PREFIX}.column_state`)}</Table.HeaderCell>
+                        <Table.HeaderCell>{translate(`${PREFIX}.column_action`)}</Table.HeaderCell>
+                    </Table.Header>
+                    <Table.Body>
+                        {plan.articles.map((article) => renderArticleRow(article, store))}
+                    </Table.Body>
+                </Table>
+            </div>
 
             <Form>
                 <Form.Field
@@ -233,7 +246,7 @@ export const PreviewStep = observer(function PreviewStep({store}) {
                     error={store.selectedLocales.length === 0 ? translate(`${PREFIX}.languages_none`) : undefined}
                     label={translate(`${PREFIX}.languages`)}
                 >
-                    <CheckboxGroup onChange={store.setLocales} values={store.selectedLocales.slice()}>
+                    <CheckboxGroup onChange={store.setImportLocales} values={store.selectedLocales.slice()}>
                         {importLocales.map((locale) => <Checkbox key={locale} value={locale}>{languageName(locale)}</Checkbox>)}
                     </CheckboxGroup>
                 </Form.Field>
@@ -277,7 +290,7 @@ export const PreviewStep = observer(function PreviewStep({store}) {
 
                 {plan.notices.length > 0 &&
                     <Form.Field label={translate(`${PREFIX}.notices`)}>
-                        <NoticeList notices={plan.notices} titles={titles} />
+                        <NoticeList notices={plan.notices} titles={plan.articles.length > 1 ? titles : {}} />
                     </Form.Field>
                 }
             </Form>

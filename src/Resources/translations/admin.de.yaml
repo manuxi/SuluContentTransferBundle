@@ -40,6 +40,7 @@ sulu_content_transfer:
     import_drop_hint: "Eine Datei mit der Endung .sulu-transfer.zip"
     import_drop_change: "Zum Ändern eine andere Datei wählen"
     console_command: "php bin/adminconsole sulu:content-transfer:import \"{fileName}\" --user={user}"
+    source_cli: "der Konsole"
     package_info: "Paket von {source}, {date}: {articles} Artikel, Sprachen: {languages}"
     column_article: "Artikel"
     column_state: "Zustand"

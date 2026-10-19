@@ -148,7 +148,8 @@ export default class ImportToolbarAction extends AbstractListToolbarAction {
         this.actions = {...this.actions, [id]: value};
     };
 
-    @action setLocales = (locales) => {
+    // not called setLocales: the list view calls that on every toolbar action to hand over its own languages
+    @action setImportLocales = (locales) => {
         this.selectedLocales = locales;
     };
 
@@ -337,6 +338,7 @@ export default class ImportToolbarAction extends AbstractListToolbarAction {
 
         return (
             <Dialog
+                key="sulu_content_transfer.import"
                 align="left"
                 cancelText={step === STEP_REPORT ? undefined : translate('sulu_admin.cancel')}
                 confirmDisabled={confirm.disabled}

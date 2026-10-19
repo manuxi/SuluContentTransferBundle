@@ -359,6 +359,7 @@ export default class ExportToolbarAction extends AbstractListToolbarAction {
     getNode() {
         return (
             <Dialog
+                key="sulu_content_transfer.export"
                 align="left"
                 cancelText={translate('sulu_admin.cancel')}
                 confirmDisabled={this.loading || !this.preview || this.selectedLocales.length === 0}
