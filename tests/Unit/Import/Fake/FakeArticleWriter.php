@@ -11,6 +11,9 @@ final class FakeArticleWriter implements ArticleWriter
     /** @var list<string> UUIDs whose create/modify fails */
     public array $failFor = [];
 
+    /** the message of the exception that is thrown for the UUIDs in $failFor */
+    public ?string $failMessage = null;
+
     public function __construct(private readonly WriteLog $log, private readonly ?FakeArticleTarget $routes = null)
     {
     }
@@ -49,7 +52,7 @@ final class FakeArticleWriter implements ArticleWriter
     private function failIfWanted(string $uuid): void
     {
         if (\in_array($uuid, $this->failFor, true)) {
-            throw new \RuntimeException('Sulu said no to '.$uuid);
+            throw new \RuntimeException($this->failMessage ?? 'Sulu said no to '.$uuid);
         }
     }
 }
