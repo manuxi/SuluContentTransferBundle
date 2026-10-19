@@ -65,6 +65,7 @@ The bundle has no security context of its own. It uses the ones that already exi
 - **Import** needs "Add" to create an article or a copy and "Edit" to update one. An update also needs "Edit" in the group the article belongs to now, not only in the group of the template in the package. "Same as in the source" additionally needs "Live" for the languages that were published. The preview of a package (step 2) needs "Add" or "Edit" in at least one group.
 - **Images:** a new image needs "Add" in the folder it lands in, a new file version of an existing image and the switch "Overwrite the texts of existing images" need "Edit" in the folder of that image.
 - An article without permission is shown as "Not importable" with the reason. If someone asks for it explicitly, the server answers 403 and writes nothing.
+- The export checks the articles only. The images and the contact data (name, e-mail address) that the articles refer to travel with them, whatever the permissions for the media library and for contacts say.
 - Categories and tags that do not exist on the target system are created by the import without a separate check of the permission for categories and tags. The preview lists them before anything is written.
 
 The buttons only appear in lists where the user may use them.

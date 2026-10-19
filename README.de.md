@@ -65,6 +65,7 @@ Das Bundle hat keinen eigenen Sicherheitskontext. Es nutzt die vorhandenen, und 
 - Der Import braucht „Hinzufügen“, um einen Artikel oder eine Kopie anzulegen, und „Bearbeiten“, um einen zu aktualisieren. Beim Aktualisieren zählt auch „Bearbeiten“ in der Gruppe, zu der der Artikel jetzt gehört, nicht nur in der Gruppe der Vorlage aus dem Paket. „Wie in der Quelle“ braucht zusätzlich „Live“ für die Sprachen, die veröffentlicht waren. Für die Vorschau (Schritt 2) genügt „Hinzufügen“ oder „Bearbeiten“ in mindestens einer Gruppe.
 - Ein neues Bild braucht „Hinzufügen“ im Ordner, in dem es landet. Eine neue Dateiversion eines vorhandenen Bildes und der Haken „Bildtexte vorhandener Bilder überschreiben“ brauchen „Bearbeiten“ im Ordner dieses Bildes.
 - Ein Artikel ohne Berechtigung steht als „Nicht importierbar“ mit dem Grund in der Vorschau. Verlangt jemand ihn ausdrücklich, antwortet der Server mit 403 und schreibt nichts.
+- Der Export prüft nur die Artikel. Die Bilder und die Kontaktdaten (Name, E-Mail-Adresse), auf die die Artikel verweisen, gehen mit, egal was die Berechtigungen für die Medienverwaltung und für Kontakte sagen.
 - Kategorien und Tags, die es auf dem Zielsystem nicht gibt, legt der Import an, ohne die Berechtigung für Kategorien und Tags gesondert zu prüfen. Die Vorschau nennt sie vorher.
 
 Die Schaltflächen erscheinen nur in Listen, in denen die Person sie benutzen darf.
