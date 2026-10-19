@@ -122,7 +122,7 @@ class ImportAnalyzer
                     \sprintf('The image "%s" is known from an earlier import but its file changed. A new file version is added.', $medium->filename),
                     null,
                     null,
-                    ['mediaId' => $medium->sourceId],
+                    ['mediaId' => $medium->sourceId, 'name' => $medium->filename],
                 );
             }
             if ((PlanMedium::CREATE === $medium->action || PlanMedium::NEW_VERSION === $medium->action) && isset($package->media[$medium->sourceId])) {
@@ -201,11 +201,12 @@ class ImportAnalyzer
             $locales = array_keys($info['locales']);
             sort($locales, \SORT_STRING);
             $where = \sprintf('%d place%s in %s', $info['places'], 1 === $info['places'] ? '' : 's', implode(', ', $locales));
-            $params = ['kind' => $kind, 'id' => $id, 'places' => $info['places'], 'locales' => implode(',', $locales)];
+            $params = ['kind' => $kind, 'id' => $id, 'name' => $resolver->name($kind, $id) ?? (string) $id, 'places' => $info['places'], 'locales' => implode(',', $locales)];
 
             if ('media' === $kind) {
                 $medium = $mediaByIds[(int) $id] ?? null;
                 if (null === $medium || PlanMedium::MISSING === $medium->action) {
+                    $params['name'] = $medium?->filename ?? (string) $id;
                     $name = null !== $medium?->filename ? '"'.$medium->filename.'"' : (string) $id;
                     $notices[] = new Notice(
                         Notice::WARNING,

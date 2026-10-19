@@ -276,6 +276,52 @@ services:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
 
+    # --- admin: import
+
+    Manuxi\SuluContentTransferBundle\Security\DoctrineMediaCollectionLookup:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
+    Manuxi\SuluContentTransferBundle\Security\MediaCollectionLookup:
+        alias: Manuxi\SuluContentTransferBundle\Security\DoctrineMediaCollectionLookup
+
+    Manuxi\SuluContentTransferBundle\Security\ImportAccess:
+        arguments:
+            - '@sulu_security.security_checker'
+            - '@Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts'
+            - '@Manuxi\SuluContentTransferBundle\Security\MediaCollectionLookup'
+            - '@sulu_media.system_collections.manager'
+
+    Manuxi\SuluContentTransferBundle\Import\PlanPresenter:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Security\ImportAccess'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ArticleTarget'
+
+    Manuxi\SuluContentTransferBundle\Controller\Admin\ImportController:
+        public: true
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer'
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportExecutor'
+            - '@Manuxi\SuluContentTransferBundle\Import\PlanStore'
+            - '@Manuxi\SuluContentTransferBundle\Import\PlanPresenter'
+            - '@Manuxi\SuluContentTransferBundle\Security\ImportAccess'
+            - '@Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator'
+            - '@security.token_storage'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: admin }
+
+    Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator:
+        arguments:
+            - '@sulu_content_transfer.package_limits'
+
+    Manuxi\SuluContentTransferBundle\EventListener\ImportUploadListener:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator'
+        tags:
+            # after the firewall (8) and the router (32), before the listener of the media bundle (0) that inspects uploads
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 4 }
+
     Manuxi\SuluContentTransferBundle\Admin\ContentTransferAdmin:
         arguments:
             - '@sulu_security.security_checker'

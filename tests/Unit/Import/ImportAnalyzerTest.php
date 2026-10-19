@@ -108,6 +108,20 @@ class ImportAnalyzerTest extends TemporaryDirectoryTestCase
         $this->assertFalse($plan->hasErrors());
     }
 
+    public function testNoticesAboutReferencesNameTheirTarget(): void
+    {
+        $plan = $this->analyzer()->analyze($this->file);
+
+        foreach ($plan->notices as $notice) {
+            if ('reference.removed' === $notice->code) {
+                $this->assertArrayHasKey('name', $notice->params);
+                $this->assertNotSame('', $notice->params['name']);
+                $this->assertArrayHasKey('kind', $notice->params);
+            }
+        }
+        $this->assertContains('pages', array_column(array_map(static fn (Notice $notice): array => $notice->params, $plan->notices), 'kind'));
+    }
+
     public function testAnalysisOfAFullTargetReusesWhatIsThere(): void
     {
         $content = "not really a jpeg \x00\x01\xff binary";

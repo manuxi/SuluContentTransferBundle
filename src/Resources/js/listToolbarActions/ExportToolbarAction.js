@@ -5,9 +5,8 @@ import {AbstractListToolbarAction} from 'sulu-admin-bundle/views';
 import {Requester} from 'sulu-admin-bundle/services';
 import {Button, Checkbox, CheckboxGroup, Dialog, Form, Loader} from 'sulu-admin-bundle/components';
 import {Radio, RadioGroup} from 'sulu-admin-bundle/components/Radio';
-import {userStore} from 'sulu-admin-bundle/stores';
+import {ERROR_COLOR, PREFIX, formatBytes, languageName} from '../utils';
 
-const PREFIX = 'sulu_content_transfer';
 const API = '/admin/api/content-transfer/export';
 const STAGE_LIVE = 'live';
 const STAGE_DRAFT = 'draft';
@@ -15,45 +14,6 @@ const MEDIA_FILES = 'files';
 const MEDIA_REFERENCES = 'references';
 const MAX_LISTED_ARTICLES = 5;
 const DEFAULT_FILE_NAME = 'export.sulu-transfer.zip';
-const ERROR_COLOR = '#cb2431';
-
-/**
- * Name of a content locale in the language of the user ("en" -> "Englisch"), the code itself if the browser
- * does not know it.
- */
-function languageName(locale) {
-    try {
-        const name = new Intl.DisplayNames([userStore.systemLocale], {type: 'language'})
-            .of(locale.replace('_', '-'));
-
-        return name || locale;
-    } catch (e) {
-        return locale;
-    }
-}
-
-/**
- * "8,4 MB" in the number format of the user; sizes below one kilobyte in bytes.
- */
-function formatBytes(bytes) {
-    const units = ['B', 'KB', 'MB', 'GB'];
-    let value = bytes;
-    let unit = 0;
-
-    while (value >= 1024 && unit < units.length - 1) {
-        value /= 1024;
-        unit++;
-    }
-
-    let number = String(Math.round(value * 10) / 10);
-    try {
-        number = new Intl.NumberFormat(userStore.systemLocale, {maximumFractionDigits: unit === 0 ? 0 : 1}).format(value);
-    } catch (e) {
-        // the plain number is good enough
-    }
-
-    return `${number} ${units[unit]}`;
-}
 
 function fileNameOf(response) {
     const header = response.headers.get('Content-Disposition') || '';
@@ -399,6 +359,7 @@ export default class ExportToolbarAction extends AbstractListToolbarAction {
     getNode() {
         return (
             <Dialog
+                key="sulu_content_transfer.export"
                 align="left"
                 cancelText={translate('sulu_admin.cancel')}
                 confirmDisabled={this.loading || !this.preview || this.selectedLocales.length === 0}

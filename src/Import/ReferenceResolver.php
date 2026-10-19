@@ -123,7 +123,15 @@ final class ReferenceResolver
      */
     public function describe(string $kind, int|string $id): string
     {
-        $text = match ($kind) {
+        return \sprintf('%s "%s"', $this->kindLabel($kind), $this->name($kind, $id) ?? (string) $id);
+    }
+
+    /**
+     * The name of a target as the package describes it (title, name, ...), null if the package does not know it.
+     */
+    public function name(string $kind, int|string $id): ?string
+    {
+        return match ($kind) {
             'pages' => $this->describePage((string) $id),
             'articles' => $this->describeArticle((string) $id),
             'categories' => $this->describeCategory($id),
@@ -132,8 +140,6 @@ final class ReferenceResolver
             'snippets' => $this->describeSnippet((string) $id),
             default => null,
         };
-
-        return \sprintf('%s "%s"', $this->kindLabel($kind), $text ?? (string) $id);
     }
 
     private function kindLabel(string $kind): string
