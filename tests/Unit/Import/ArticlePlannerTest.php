@@ -115,14 +115,14 @@ class ArticlePlannerTest extends TestCase
     {
         $this->articles->articles[self::UUID] = new TargetArticle(self::UUID, [
             $this->dimension('de', 'live', '2026-10-17T09:00:00+00:00'),
-            $this->dimension('en', 'live', '2026-10-20T10:30:00+00:00', 'M. Bertrams'),
+            $this->dimension('en', 'live', '2026-10-20T10:30:00+00:00', 'J. Editor'),
         ]);
 
         $article = $this->planner->plan(ImportFixtures::entry(), ImportFixtures::item(), $this->context())->article;
 
         $this->assertSame(ArticleState::CHANGED, $article->state);
         $this->assertSame('2026-10-20T10:30:00+00:00', $article->changedAt?->format(\DATE_ATOM));
-        $this->assertSame('M. Bertrams', $article->changedBy);
+        $this->assertSame('J. Editor', $article->changedBy);
         $this->assertSame(ArticleAction::SKIP, $article->defaultAction);
         $this->assertSame([ArticleAction::SKIP, ArticleAction::UPDATE, ArticleAction::COPY], $article->allowedActions);
     }
