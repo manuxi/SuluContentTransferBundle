@@ -17,6 +17,7 @@ use Manuxi\SuluContentTransferBundle\Import\ImportExecutor;
 use Manuxi\SuluContentTransferBundle\Import\Plan\ImportPlan;
 use Manuxi\SuluContentTransferBundle\Import\PlanPresenter;
 use Manuxi\SuluContentTransferBundle\Import\PlanStore;
+use Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator;
 use Manuxi\SuluContentTransferBundle\Import\Report\ArticleResult;
 use Manuxi\SuluContentTransferBundle\Import\Report\ImportReport;
 use Manuxi\SuluContentTransferBundle\Package\PackageLimits;
@@ -320,10 +321,8 @@ class ImportControllerTest extends TemporaryDirectoryTestCase
             $this->planStore,
             $this->presenter,
             $this->access,
-            new PackageLimits($maxPackageSize),
+            new UploadValidator(new PackageLimits($maxPackageSize), $postMaxSize, $uploadMaxFilesize),
             $tokens,
-            $postMaxSize,
-            $uploadMaxFilesize,
         );
     }
 

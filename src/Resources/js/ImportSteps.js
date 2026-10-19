@@ -223,7 +223,6 @@ export const PreviewStep = observer(function PreviewStep({store}) {
                     languages: plan.locales.map(({locale}) => languageName(locale)).join(', '),
                 })}
             </p>
-            {plan.package.sameInstance && <p style={{color: '#9a6700'}}>{translate(`${PREFIX}.notice_source_same_instance`)}</p>}
 
             <div style={{marginBottom: 24}}>
                 <Table>

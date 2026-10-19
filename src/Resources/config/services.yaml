@@ -305,11 +305,22 @@ services:
             - '@Manuxi\SuluContentTransferBundle\Import\PlanStore'
             - '@Manuxi\SuluContentTransferBundle\Import\PlanPresenter'
             - '@Manuxi\SuluContentTransferBundle\Security\ImportAccess'
-            - '@sulu_content_transfer.package_limits'
+            - '@Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator'
             - '@security.token_storage'
         tags:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
+
+    Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator:
+        arguments:
+            - '@sulu_content_transfer.package_limits'
+
+    Manuxi\SuluContentTransferBundle\EventListener\ImportUploadListener:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator'
+        tags:
+            # after the firewall (8) and the router (32), before the listener of the media bundle (0) that inspects uploads
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 4 }
 
     Manuxi\SuluContentTransferBundle\Admin\ContentTransferAdmin:
         arguments:

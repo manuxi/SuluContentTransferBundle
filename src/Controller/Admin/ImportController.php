@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Manuxi\SuluContentTransferBundle\Controller\Admin;
 
 use Manuxi\SuluContentTransferBundle\Exception\ContentTransferException;
-use Manuxi\SuluContentTransferBundle\Exception\ImportDeniedException;
-use Manuxi\SuluContentTransferBundle\Exception\UploadTooLargeException;
 use Manuxi\SuluContentTransferBundle\Import\Execute\ImportDecisions;
 use Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer;
 use Manuxi\SuluContentTransferBundle\Import\ImportExecutor;
 use Manuxi\SuluContentTransferBundle\Import\PlanPresenter;
 use Manuxi\SuluContentTransferBundle\Import\PlanStore;
-use Manuxi\SuluContentTransferBundle\Package\PackageLimits;
+use Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator;
 use Manuxi\SuluContentTransferBundle\Security\ImportAccess;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,10 +41,8 @@ class ImportController
         private readonly PlanStore $planStore,
         private readonly PlanPresenter $presenter,
         private readonly ImportAccess $access,
-        private readonly PackageLimits $limits,
+        private readonly UploadValidator $uploads,
         private readonly TokenStorageInterface $tokenStorage,
-        private readonly ?int $postMaxSize = null,
-        private readonly ?int $uploadMaxFilesize = null,
     ) {
     }
 
@@ -55,12 +50,12 @@ class ImportController
     public function analyze(Request $request): JsonResponse
     {
         try {
-            $file = $this->uploadedFile($request);
+            $file = $this->uploads->validate($request);
             $plan = $this->analyzer->analyze($file->getPathname());
 
             return new JsonResponse($this->presenter->present($plan));
         } catch (ContentTransferException $exception) {
-            return $this->error($exception);
+            return ImportErrorResponse::for($exception);
         }
     }
 
@@ -86,7 +81,7 @@ class ImportController
 
             return new JsonResponse(['report' => $report->toArray(), 'hasFailures' => $report->hasFailures()]);
         } catch (ContentTransferException $exception) {
-            return $this->error($exception);
+            return ImportErrorResponse::for($exception);
         }
     }
 
@@ -96,42 +91,6 @@ class ImportController
         $this->executor->discard($token);
 
         return new Response('', Response::HTTP_NO_CONTENT);
-    }
-
-    /**
-     * @throws UploadTooLargeException when the server did not accept the upload because of its size
-     * @throws ContentTransferException
-     */
-    private function uploadedFile(Request $request): UploadedFile
-    {
-        $file = $request->files->get('file');
-
-        if (!$file instanceof UploadedFile) {
-            // PHP drops the whole request (files and fields) when it is larger than post_max_size
-            $postMax = $this->postMaxSize ?? self::iniBytes('post_max_size');
-            $length = (int) $request->headers->get('Content-Length', '0');
-            if ($postMax > 0 && $length > $postMax) {
-                throw new UploadTooLargeException($postMax);
-            }
-
-            throw new ContentTransferException('No package was uploaded (form field "file").', 'import.no_file');
-        }
-
-        if (!$file->isValid()) {
-            if (\in_array($file->getError(), [\UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE], true)) {
-                $limit = $this->uploadMaxFilesize ?? self::iniBytes('upload_max_filesize');
-
-                throw new UploadTooLargeException($limit > 0 ? $limit : null);
-            }
-
-            throw new ContentTransferException('The upload failed: '.$file->getErrorMessage(), 'import.upload_failed');
-        }
-
-        if ($file->getSize() > $this->limits->maxPackageSize) {
-            throw new UploadTooLargeException($this->limits->maxPackageSize);
-        }
-
-        return $file;
     }
 
     /**
@@ -182,48 +141,5 @@ class ImportController
         }
 
         return [$token, new ImportDecisions($actions, $locales, true === ($data['keepStatus'] ?? false), true === ($data['overwriteMediaMeta'] ?? false))];
-    }
-
-    private function error(ContentTransferException $exception): JsonResponse
-    {
-        $status = match ($exception->getReason()) {
-            ImportDeniedException::REASON, 'import.user_unknown', 'import.user_disabled' => Response::HTTP_FORBIDDEN,
-            'plan.missing' => Response::HTTP_NOT_FOUND,
-            'plan.expired' => Response::HTTP_GONE,
-            'plan.changed' => Response::HTTP_CONFLICT,
-            UploadTooLargeException::REASON => Response::HTTP_REQUEST_ENTITY_TOO_LARGE,
-            'import.bad_request', 'import.no_file', 'import.action_unknown', 'import.action_not_allowed', 'import.article_unknown', 'plan.token_invalid' => Response::HTTP_BAD_REQUEST,
-            default => Response::HTTP_UNPROCESSABLE_ENTITY,
-        };
-
-        $body = ['error' => $exception->getMessage(), 'code' => $exception->getReason()];
-        if ($exception instanceof ImportDeniedException) {
-            $body['articles'] = $exception->reasons;
-        }
-        if ($exception instanceof UploadTooLargeException) {
-            $body['limit'] = $exception->limit;
-        }
-
-        return new JsonResponse($body, $status);
-    }
-
-    /**
-     * A PHP size setting ("2M", "8G", "0") in bytes; 0 means no limit.
-     */
-    private static function iniBytes(string $name): int
-    {
-        $value = trim((string) \ini_get($name));
-        if ('' === $value || !preg_match('/^(-?\d+)\s*([kmg]?)b?$/i', $value, $matches)) {
-            return 0;
-        }
-
-        $bytes = (int) $matches[1] * match (strtolower($matches[2])) {
-            'k' => 1024,
-            'm' => 1024 ** 2,
-            'g' => 1024 ** 3,
-            default => 1,
-        };
-
-        return max(0, $bytes);
     }
 }
