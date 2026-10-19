@@ -46,7 +46,7 @@ class ImportAnalyzer
         $extracted = $this->reader->read($zipFile);
 
         try {
-            $plan = $this->buildPlan($extracted, $now ?? new \DateTimeImmutable());
+            $plan = $this->plan($extracted, $now ?? new \DateTimeImmutable());
             $this->planStore->save($plan);
         } catch (\Throwable $exception) {
             $this->planStore->remove($extracted->token);
@@ -57,7 +57,11 @@ class ImportAnalyzer
         return $plan;
     }
 
-    private function buildPlan(ExtractedPackage $extracted, \DateTimeImmutable $now): ImportPlan
+    /**
+     * Works out the plan for an unpacked package against the current state of this system, without storing it. The
+     * import calls this again right before it writes and compares the result with the plan the person saw.
+     */
+    public function plan(ExtractedPackage $extracted, \DateTimeImmutable $now): ImportPlan
     {
         $package = $extracted->package;
         $manifest = $package->manifest;
