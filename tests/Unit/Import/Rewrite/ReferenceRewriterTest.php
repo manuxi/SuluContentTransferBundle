@@ -16,6 +16,10 @@ final class ReferenceRewriterTest extends TestCase
     private const PAGE_B = 'bbbbbbbb-0000-4000-8000-00000000000b';
     private const ARTICLE = 'cccccccc-0000-4000-8000-00000000000c';
 
+    /**
+     * @param array<string, int|string> $replace "kind:id" => new value
+     * @param list<string>              $remove  "kind:id"
+     */
     private function map(array $replace = [], array $remove = []): RewriteMap
     {
         return new class($replace, $remove) implements RewriteMap {
