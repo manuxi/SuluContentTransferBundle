@@ -140,7 +140,8 @@ class TranslationCoverageTest extends TestCase
 
         $invalid = [];
         foreach ($this->texts($file) as $key => $text) {
-            if (null === @\MessageFormatter::create(str_contains($file, '.de.') ? 'de' : 'en', $text)) {
+            // the stubs of PHPStan do not know that create() returns null for a message that cannot be parsed
+            if (null === @\MessageFormatter::create(str_contains($file, '.de.') ? 'de' : 'en', $text)) { // @phpstan-ignore-line
                 $invalid[] = $key;
             }
         }
