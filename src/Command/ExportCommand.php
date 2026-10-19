@@ -7,6 +7,7 @@ namespace Manuxi\SuluContentTransferBundle\Command;
 use Manuxi\SuluContentTransferBundle\Exception\ContentTransferException;
 use Manuxi\SuluContentTransferBundle\Export\ArticleExporter;
 use Manuxi\SuluContentTransferBundle\Export\ExportedArticle;
+use Manuxi\SuluContentTransferBundle\Export\ExportFileName;
 use Manuxi\SuluContentTransferBundle\Export\ExportRequest;
 use Manuxi\SuluContentTransferBundle\Package\PackageWriter;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -128,27 +129,7 @@ TXT);
             return $option;
         }
 
-        $title = '';
-        foreach ($articles as $article) {
-            if ('' !== $article->title) {
-                $title = $article->title;
-
-                break;
-            }
-        }
-
-        $slug = strtolower(trim((string) preg_replace('/[^A-Za-z0-9]+/', '-', self::transliterate($title)), '-'));
-        $slug = '' === $slug ? 'articles' : substr($slug, 0, 60);
-
-        return (getcwd() ?: '.') . \DIRECTORY_SEPARATOR . date('Y-m-d') . '-' . $slug . '.sulu-transfer.zip';
-    }
-
-    private static function transliterate(string $text): string
-    {
-        $text = strtr($text, ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ß' => 'ss']);
-        $converted = @iconv('UTF-8', 'ASCII//TRANSLIT', $text);
-
-        return false === $converted ? $text : $converted;
+        return (getcwd() ?: '.') . \DIRECTORY_SEPARATOR . ExportFileName::for($articles);
     }
 
     private static function formatBytes(int $bytes): string
