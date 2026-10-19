@@ -1,5 +1,5 @@
 sulu_content_transfer:
-    export: "Export"
+    export: "Export package"
     export_title: "Export articles ({count} selected)"
     export_confirm: "Export"
     also_selected: "Also included: {titles}"

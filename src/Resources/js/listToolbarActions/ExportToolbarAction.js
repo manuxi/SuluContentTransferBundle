@@ -15,6 +15,7 @@ const MEDIA_FILES = 'files';
 const MEDIA_REFERENCES = 'references';
 const MAX_LISTED_ARTICLES = 5;
 const DEFAULT_FILE_NAME = 'export.sulu-transfer.zip';
+const ERROR_COLOR = '#cb2431';
 
 /**
  * Name of a content locale in the language of the user ("en" -> "Englisch"), the code itself if the browser
@@ -99,7 +100,7 @@ export default class ExportToolbarAction extends AbstractListToolbarAction {
         return {
             type: 'button',
             label: translate(`${PREFIX}.export`),
-            icon: 'su-download',
+            icon: 'su-archive',
             disabled: this.listStore.selectionIds.length === 0,
             onClick: this.handleOpen,
         };
@@ -172,10 +173,6 @@ export default class ExportToolbarAction extends AbstractListToolbarAction {
         });
 
         this.loadPreview();
-    };
-
-    @action handleErrorClose = () => {
-        this.error = undefined;
     };
 
     /**
@@ -367,15 +364,27 @@ export default class ExportToolbarAction extends AbstractListToolbarAction {
         );
     }
 
+    renderError() {
+        return this.error
+            ? <p role="alert" style={{color: ERROR_COLOR}}>{this.error}</p>
+            : null;
+    }
+
     renderContent() {
         if (!this.preview) {
-            return this.loading ? <Loader /> : null;
+            return (
+                <React.Fragment>
+                    {this.renderError()}
+                    {this.loading && <Loader />}
+                </React.Fragment>
+            );
         }
 
         const extras = this.extraArticles.map(({title}) => `„${title}“`).join(', ');
 
         return (
             <div style={{opacity: this.loading ? 0.5 : 1}}>
+                {this.renderError()}
                 {extras && <p>{translate(`${PREFIX}.also_selected`, {titles: extras})}</p>}
                 <Form>
                     {this.renderLocales()}
@@ -390,15 +399,14 @@ export default class ExportToolbarAction extends AbstractListToolbarAction {
     getNode() {
         return (
             <Dialog
+                align="left"
                 cancelText={translate('sulu_admin.cancel')}
                 confirmDisabled={this.loading || !this.preview || this.selectedLocales.length === 0}
                 confirmLoading={this.exporting}
                 confirmText={translate(`${PREFIX}.export_confirm`)}
                 onCancel={this.handleCancel}
                 onConfirm={this.handleConfirm}
-                onSnackbarCloseClick={this.handleErrorClose}
                 open={this.open}
-                snackbarMessage={this.error}
                 title={translate(`${PREFIX}.export_title`, {count: this.open ? this.getIds().length : 0})}
             >
                 {this.renderContent()}

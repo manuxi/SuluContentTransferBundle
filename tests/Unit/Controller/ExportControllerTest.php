@@ -209,6 +209,21 @@ class ExportControllerTest extends TemporaryDirectoryTestCase
         $this->exporter->expects($this->never())->method('export');
     }
 
+    public function testAnEmptyListOfLanguagesIsNeverPassedOnBecauseTheExporterReadsItAsAll(): void
+    {
+        $controller = $this->controller();
+        $this->access = $this->createMock(ExportAccess::class);
+        $this->access->method('resolve')->willReturn(new ExportScope([], []));
+        $workDirectory = new WorkDirectory($this->workDir);
+        $controller = new ExportController($this->exporter, new PackageWriter(new PackageLimits(), $workDirectory), $workDirectory, $this->access);
+
+        foreach ([$controller->preview($this->request(['ids' => [self::ARTICLE_1]])), $controller->export($this->request(['ids' => [self::ARTICLE_1]]))] as $response) {
+            $this->assertSame(422, $response->getStatusCode());
+            $this->assertSame('export.nothing_to_export', $this->json($response)['code']);
+        }
+        $this->assertNull($this->exportRequest);
+    }
+
     public function testUnknownArticleIsNotFound(): void
     {
         $controller = $this->controller(null, new ContentTransferException('Article not found: x.', 'export.article_not_found'));

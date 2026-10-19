@@ -14,6 +14,7 @@ use Manuxi\SuluContentTransferBundle\Export\ExportResult;
 use Manuxi\SuluContentTransferBundle\Package\PackageWriter;
 use Manuxi\SuluContentTransferBundle\Package\WorkDirectory;
 use Manuxi\SuluContentTransferBundle\Security\ExportAccess;
+use Manuxi\SuluContentTransferBundle\Security\ExportScope;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,7 +56,7 @@ class ExportController
     {
         try {
             [$uuids, $locales, $stage] = $this->parse($request);
-            $scope = $this->access->resolve($uuids, $locales);
+            $scope = $this->resolve($uuids, $locales);
             // the files themselves are not needed to count the images and their size
             $result = $this->exporter->export(new ExportRequest($uuids, $scope->locales, $stage, false));
         } catch (ContentTransferException $exception) {
@@ -74,7 +75,7 @@ class ExportController
     {
         try {
             [$uuids, $locales, $stage] = $this->parse($request);
-            $scope = $this->access->resolve($uuids, $locales);
+            $scope = $this->resolve($uuids, $locales);
             $result = $this->exporter->export(new ExportRequest($uuids, $scope->locales, $stage, $this->includeMediaFiles($request)));
         } catch (ContentTransferException $exception) {
             return $this->error($exception);
@@ -115,6 +116,21 @@ class ExportController
         }
 
         return $response;
+    }
+
+    /**
+     * @param list<string> $uuids
+     * @param list<string> $locales
+     */
+    private function resolve(array $uuids, array $locales): ExportScope
+    {
+        $scope = $this->access->resolve($uuids, $locales);
+        // an empty list of languages means "all" to the exporter: never pass one on
+        if ([] === $scope->locales) {
+            throw new ContentTransferException('There is nothing to export in the selected languages.', 'export.nothing_to_export');
+        }
+
+        return $scope;
     }
 
     /**
