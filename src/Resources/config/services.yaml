@@ -168,8 +168,80 @@ services:
             - '@Manuxi\SuluContentTransferBundle\Import\MediaPlanner'
             - '@Manuxi\SuluContentTransferBundle\Repository\TransferMappings'
 
+    # --- import execution
+
+    Manuxi\SuluContentTransferBundle\Import\Write\SecurityImportUserContext:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@security.token_storage'
+
+    Manuxi\SuluContentTransferBundle\Import\Write\ImportUserContext:
+        alias: Manuxi\SuluContentTransferBundle\Import\Write\SecurityImportUserContext
+
+    Manuxi\SuluContentTransferBundle\Import\Write\DoctrineTransaction:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@doctrine'
+
+    Manuxi\SuluContentTransferBundle\Import\Write\Transaction:
+        alias: Manuxi\SuluContentTransferBundle\Import\Write\DoctrineTransaction
+
+    Manuxi\SuluContentTransferBundle\Import\Write\MessageArticleWriter:
+        arguments:
+            - '@sulu_message_bus'
+
+    Manuxi\SuluContentTransferBundle\Import\Write\ArticleWriter:
+        alias: Manuxi\SuluContentTransferBundle\Import\Write\MessageArticleWriter
+
+    Manuxi\SuluContentTransferBundle\Import\Write\SuluTaxonomyWriter:
+        arguments:
+            - '@sulu_category.category_manager'
+            - '@sulu_tag.tag_manager'
+            - '@doctrine.orm.entity_manager'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\ImportUserContext'
+
+    Manuxi\SuluContentTransferBundle\Import\Write\TaxonomyWriter:
+        alias: Manuxi\SuluContentTransferBundle\Import\Write\SuluTaxonomyWriter
+
+    Manuxi\SuluContentTransferBundle\Import\Write\SuluMediaWriter:
+        arguments:
+            - '@sulu_media.media_manager'
+            - '@sulu_media.format_options_manager'
+            - '@sulu_media.system_collections.manager'
+            - '@doctrine.orm.entity_manager'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\ImportUserContext'
+
+    Manuxi\SuluContentTransferBundle\Import\Write\MediaWriter:
+        alias: Manuxi\SuluContentTransferBundle\Import\Write\SuluMediaWriter
+
+    Manuxi\SuluContentTransferBundle\Import\Write\SuluAdminLinks:
+        arguments:
+            - '@sulu_admin.metadata_group_provider'
+
+    Manuxi\SuluContentTransferBundle\Import\Write\AdminLinks:
+        alias: Manuxi\SuluContentTransferBundle\Import\Write\SuluAdminLinks
+
+    Manuxi\SuluContentTransferBundle\Import\Rewrite\ReferenceRewriter: ~
+
+    Manuxi\SuluContentTransferBundle\Import\ImportExecutor:
+        arguments:
+            - '@sulu_content_transfer.package_reader'
+            - '@Manuxi\SuluContentTransferBundle\Import\PlanStore'
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\ImportUserContext'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\TaxonomyWriter'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\MediaWriter'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\ArticleWriter'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\Transaction'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ArticleTarget'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ReferenceTarget'
+            - '@Manuxi\SuluContentTransferBundle\Repository\TransferMappings'
+            - '@Manuxi\SuluContentTransferBundle\Import\Rewrite\ReferenceRewriter'
+            - '@Manuxi\SuluContentTransferBundle\Import\Write\AdminLinks'
+
     Manuxi\SuluContentTransferBundle\Command\ImportCommand:
         arguments:
             - '@Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer'
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportExecutor'
         tags:
             - { name: console.command }

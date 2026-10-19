@@ -82,6 +82,57 @@ class PackageReader
     }
 
     /**
+     * Opens a package that was unpacked by read() earlier (second step of an import, found by its token). The same
+     * checks as for a fresh package apply to what is on disk: expected paths only, no links, media files match their
+     * size and SHA-256.
+     *
+     * @throws InvalidPackageException when the directory holds anything but a package
+     */
+    public function open(string $token): ExtractedPackage
+    {
+        $directory = $this->workDirectory->path($token);
+        $root = realpath($directory);
+        if (false === $root) {
+            throw new InvalidPackageException('The work directory of the package does not exist.');
+        }
+
+        $manifestFile = $root.\DIRECTORY_SEPARATOR.PackagePath::MANIFEST;
+        $content = is_file($manifestFile) ? @file_get_contents($manifestFile) : false;
+        if (false === $content || \strlen($content) > PackageLimits::MAX_JSON_FILE_SIZE) {
+            throw new InvalidPackageException('The unpacked package contains no readable manifest.json.');
+        }
+        $manifestData = Json::decode($content, 'manifest.json');
+        Manifest::assertSupportedVersion($manifestData);
+
+        $entries = [];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST,
+        );
+        foreach ($iterator as $item) {
+            if ($item->isLink()) {
+                throw new InvalidPackageException('The unpacked package contains a symbolic link.', 'package.unexpected_entry');
+            }
+            $name = str_replace(\DIRECTORY_SEPARATOR, '/', substr($item->getPathname(), \strlen($root) + 1));
+            if ($item->isDir()) {
+                continue;
+            }
+            if ('plan.json' === $name) {
+                continue;
+            }
+            $kind = PackagePath::classify($name);
+            if (null === $kind || PackagePath::KIND_DIRECTORY === $kind['kind']) {
+                throw new InvalidPackageException(\sprintf('The unpacked package contains an unexpected entry %s.', PackagePath::describe($name)), 'package.unexpected_entry');
+            }
+            $entries[] = ['index' => 0, 'name' => $name, 'size' => (int) $item->getSize()] + $kind;
+        }
+
+        $package = $this->load(Manifest::fromArray($manifestData), $entries, $root);
+
+        return new ExtractedPackage($token, $root, $package);
+    }
+
+    /**
      * @return array<int|string, mixed>
      */
     private function readManifestData(\ZipArchive $zip): array

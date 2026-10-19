@@ -7,9 +7,14 @@ namespace Manuxi\SuluContentTransferBundle\Repository;
 use Manuxi\SuluContentTransferBundle\Entity\TransferMapping;
 
 /**
- * Read access to the mapping table; the import analysis only needs this part of the repository.
+ * The mapping table: the analysis reads it, the import writes it.
  */
 interface TransferMappings
 {
     public function findMapping(string $sourceInstance, string $resourceKey, string $sourceId): ?TransferMapping;
+
+    /**
+     * Stores a new row (the caller flushes, usually together with the content it belongs to).
+     */
+    public function add(TransferMapping $mapping): void;
 }
