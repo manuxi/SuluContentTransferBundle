@@ -11,6 +11,7 @@ use Manuxi\SuluContentTransferBundle\Export\ExportedArticle;
 use Manuxi\SuluContentTransferBundle\Export\ExportFileName;
 use Manuxi\SuluContentTransferBundle\Export\ExportRequest;
 use Manuxi\SuluContentTransferBundle\Export\ExportResult;
+use Manuxi\SuluContentTransferBundle\Import\Plan\ImportPlan;
 use Manuxi\SuluContentTransferBundle\Package\PackageWriter;
 use Manuxi\SuluContentTransferBundle\Package\WorkDirectory;
 use Manuxi\SuluContentTransferBundle\Security\ExportAccess;
@@ -80,6 +81,9 @@ class ExportController
         } catch (ContentTransferException $exception) {
             return $this->error($exception);
         }
+
+        // A download that was aborted by the browser leaves its file behind: clean up what is older than a day.
+        $this->workDirectory->purgeOlderThan(ImportPlan::LIFETIME_SECONDS);
 
         // The file is written completely before the answer starts: a failure then still gives a proper error message.
         $token = $this->workDirectory->create();

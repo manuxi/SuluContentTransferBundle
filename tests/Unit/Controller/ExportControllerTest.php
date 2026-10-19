@@ -194,6 +194,20 @@ class ExportControllerTest extends TemporaryDirectoryTestCase
         $this->assertSame(0, self::countFiles($this->workDir));
     }
 
+    public function testLeftoversOfAnAbortedDownloadAreRemovedByTheNextExport(): void
+    {
+        $workDirectory = new WorkDirectory($this->workDir);
+        $stale = $workDirectory->create();
+        touch($workDirectory->path($stale), time() - 2 * 86400);
+        $recent = $workDirectory->create();
+
+        $this->controller()->export($this->request(['ids' => [self::ARTICLE_1]]));
+
+        $this->assertDirectoryDoesNotExist($this->workDir.'/'.$stale);
+        // the file of a download that is still running stays
+        $this->assertDirectoryExists($this->workDir.'/'.$recent);
+    }
+
     public function testDeniedUserGetsForbiddenForPreviewAndExport(): void
     {
         $controller = $this->controller(new ExportDeniedException([self::ARTICLE_1]));
