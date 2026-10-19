@@ -1,0 +1,33 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    tmpDir: var/cache/phpstan
+    # Inline ignores differ between PHPStan 1.x and 2.x (generics of the Symfony config builder).
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Doctrine assigns the id
+        -
+            identifier: property.unusedType
+            path: src/Entity/TransferMapping.php
+        # Defensive checks on data read from a package or from older PHP/Sulu versions
+        -
+            identifier: function.alreadyNarrowedType
+            paths:
+                - src/Export/ReferenceLookupBuilder.php
+                - src/Package/PackageWriter.php
+        -
+            identifier: nullsafe.neverNull
+            path: src/Import/ImportAnalyzer.php
+        # Entity class names come from the Sulu configuration at runtime
+        -
+            identifier: argument.templateType
+            path: src/Import/Target/DoctrineReferenceTarget.php
+        # Test doubles
+        -
+            identifier: return.unusedType
+            path: tests/Unit/Import/Fake/FakeImportSupport.php
+        -
+            identifier: method.alreadyNarrowedType
+            path: tests/Unit/Import/ReferenceResolverTest.php
