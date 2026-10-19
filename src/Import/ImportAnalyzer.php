@@ -201,11 +201,12 @@ class ImportAnalyzer
             $locales = array_keys($info['locales']);
             sort($locales, \SORT_STRING);
             $where = \sprintf('%d place%s in %s', $info['places'], 1 === $info['places'] ? '' : 's', implode(', ', $locales));
-            $params = ['kind' => $kind, 'id' => $id, 'places' => $info['places'], 'locales' => implode(',', $locales)];
+            $params = ['kind' => $kind, 'id' => $id, 'name' => $resolver->name($kind, $id) ?? (string) $id, 'places' => $info['places'], 'locales' => implode(',', $locales)];
 
             if ('media' === $kind) {
                 $medium = $mediaByIds[(int) $id] ?? null;
                 if (null === $medium || PlanMedium::MISSING === $medium->action) {
+                    $params['name'] = $medium?->filename ?? (string) $id;
                     $name = null !== $medium?->filename ? '"'.$medium->filename.'"' : (string) $id;
                     $notices[] = new Notice(
                         Notice::WARNING,
