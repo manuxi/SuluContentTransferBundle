@@ -41,7 +41,7 @@ sulu_content_transfer:
     import_drop_change: "Choose another file to change it"
     console_command: "php bin/adminconsole sulu:content-transfer:import \"{fileName}\" --user={user}"
     source_cli: "the console"
-    package_info: "Package from {source}, {date}: {articles} articles, languages: {languages}"
+    package_info: "Package from {source}, {date}: {articles, plural, one {# article} other {# articles}}, languages: {languages}"
     column_article: "Article"
     column_state: "State"
     column_action: "Action"
