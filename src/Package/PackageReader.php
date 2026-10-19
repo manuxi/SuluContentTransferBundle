@@ -37,7 +37,8 @@ class PackageReader
 
     public function read(string $zipFile): ExtractedPackage
     {
-        if (!is_file($zipFile) || !is_readable($zipFile)) {
+        // no is_readable(): it reports false for readable files on some network drives (like is_writable())
+        if (!is_file($zipFile)) {
             throw new InvalidPackageException('The package file does not exist or cannot be read.');
         }
         clearstatcache(true, $zipFile);
