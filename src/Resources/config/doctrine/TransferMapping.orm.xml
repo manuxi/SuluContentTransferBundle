@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Manuxi\SuluContentTransferBundle\Entity\TransferMapping"
+            repository-class="Manuxi\SuluContentTransferBundle\Repository\TransferMappingRepository"
+            table="ct_transfer_mapping">
+
+        <unique-constraints>
+            <unique-constraint name="ct_transfer_mapping_source" columns="source_instance,resource_key,source_id"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="sourceInstance" type="string" length="64" nullable="false" column="source_instance"/>
+        <field name="resourceKey" type="string" length="64" nullable="false" column="resource_key"/>
+        <field name="sourceId" type="string" length="64" nullable="false" column="source_id"/>
+        <field name="targetId" type="string" length="64" nullable="false" column="target_id"/>
+        <field name="importedAt" type="datetime_immutable" nullable="false" column="imported_at"/>
+        <field name="sourceChanged" type="datetime_immutable" nullable="true" column="source_changed"/>
+
+    </entity>
+</doctrine-mapping>

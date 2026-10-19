@@ -99,3 +99,77 @@ services:
             - '@sulu_content_transfer.package_writer'
         tags:
             - { name: console.command }
+
+    # --- import analysis
+
+    Manuxi\SuluContentTransferBundle\Repository\TransferMappingRepository:
+        factory: ['@doctrine.orm.entity_manager', 'getRepository']
+        arguments:
+            - 'Manuxi\SuluContentTransferBundle\Entity\TransferMapping'
+
+    Manuxi\SuluContentTransferBundle\Repository\TransferMappings:
+        alias: Manuxi\SuluContentTransferBundle\Repository\TransferMappingRepository
+
+    Manuxi\SuluContentTransferBundle\Import\Target\DoctrineArticleTarget:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_admin.metadata_provider_registry'
+
+    Manuxi\SuluContentTransferBundle\Import\Target\ArticleTarget:
+        alias: Manuxi\SuluContentTransferBundle\Import\Target\DoctrineArticleTarget
+
+    Manuxi\SuluContentTransferBundle\Import\Target\DoctrineMediaTarget:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@sulu_media.storage'
+
+    Manuxi\SuluContentTransferBundle\Import\Target\MediaTarget:
+        alias: Manuxi\SuluContentTransferBundle\Import\Target\DoctrineMediaTarget
+
+    Manuxi\SuluContentTransferBundle\Import\Target\DoctrineReferenceTarget:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
+    Manuxi\SuluContentTransferBundle\Import\Target\ReferenceTarget:
+        alias: Manuxi\SuluContentTransferBundle\Import\Target\DoctrineReferenceTarget
+
+    Manuxi\SuluContentTransferBundle\Import\Target\WebspaceSystemTarget:
+        arguments:
+            - '@sulu_core.webspace.webspace_manager'
+            - '%sulu_article.default_main_webspace%'
+
+    Manuxi\SuluContentTransferBundle\Import\Target\SystemTarget:
+        alias: Manuxi\SuluContentTransferBundle\Import\Target\WebspaceSystemTarget
+
+    Manuxi\SuluContentTransferBundle\Import\ArticlePlanner:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ArticleTarget'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\SystemTarget'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ReferenceTarget'
+            - '@Manuxi\SuluContentTransferBundle\Repository\TransferMappings'
+
+    Manuxi\SuluContentTransferBundle\Import\MediaPlanner:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\MediaTarget'
+            - '@Manuxi\SuluContentTransferBundle\Repository\TransferMappings'
+
+    Manuxi\SuluContentTransferBundle\Import\PlanStore:
+        arguments:
+            - '@sulu_content_transfer.work_directory'
+
+    Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer:
+        arguments:
+            - '@sulu_content_transfer.package_reader'
+            - '@Manuxi\SuluContentTransferBundle\Import\PlanStore'
+            - '@sulu_content_transfer.instance_identity'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ArticleTarget'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ReferenceTarget'
+            - '@Manuxi\SuluContentTransferBundle\Import\ArticlePlanner'
+            - '@Manuxi\SuluContentTransferBundle\Import\MediaPlanner'
+            - '@Manuxi\SuluContentTransferBundle\Repository\TransferMappings'
+
+    Manuxi\SuluContentTransferBundle\Command\ImportCommand:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer'
+        tags:
+            - { name: console.command }
