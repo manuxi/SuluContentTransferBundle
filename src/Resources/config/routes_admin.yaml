@@ -1,0 +1,5 @@
+content_transfer_api:
+    prefix: /admin/api
+    resource: Manuxi\SuluContentTransferBundle\Controller\Admin\ExportController
+    type: attribute
+    name_prefix: sulu_content_transfer.

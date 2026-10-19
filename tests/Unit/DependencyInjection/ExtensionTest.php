@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluContentTransferBundle\Tests\Unit\DependencyInjection;
 
+use Manuxi\SuluContentTransferBundle\Controller\Admin\ExportController;
 use Manuxi\SuluContentTransferBundle\DependencyInjection\SuluContentTransferExtension;
 use Manuxi\SuluContentTransferBundle\Instance\InstanceIdentity;
 use Manuxi\SuluContentTransferBundle\Package\PackageLimits;
@@ -79,6 +80,8 @@ class ExtensionTest extends TestCase
         foreach ([InstanceIdentity::class, PackageLimits::class, WorkDirectory::class, PackageReader::class, PackageWriter::class] as $id) {
             $container->getAlias($id)->setPublic(true);
         }
+        // the controller is public and pulls in the services of Sulu, which this container does not have
+        $container->removeDefinition(ExportController::class);
         $container->compile(true);
 
         return $container;

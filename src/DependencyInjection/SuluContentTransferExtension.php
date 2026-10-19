@@ -36,6 +36,16 @@ class SuluContentTransferExtension extends Extension implements PrependExtension
             ]);
         }
 
+        if ($container->hasExtension('framework')) {
+            $container->prependExtensionConfig('framework', [
+                'translator' => [
+                    'paths' => [
+                        __DIR__.'/../Resources/translations',
+                    ],
+                ],
+            ]);
+        }
+
         if ($container->hasExtension('sulu_media')) {
             $container->prependExtensionConfig('sulu_media', [
                 'system_collections' => [
