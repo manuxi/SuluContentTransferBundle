@@ -39,6 +39,26 @@ class ImportAccess
     }
 
     /**
+     * Whether the user may import at all: add or edit articles in at least one article group. The analysis of a package
+     * (which tells what exists on this system) is refused to everybody else.
+     *
+     * @throws ImportDeniedException
+     */
+    public function assertMayImport(): void
+    {
+        foreach ($this->contexts->all() as $context) {
+            $condition = new SecurityCondition($context);
+            if ($this->securityChecker->hasPermission($condition, PermissionTypes::ADD)
+                || $this->securityChecker->hasPermission($condition, PermissionTypes::EDIT)
+            ) {
+                return;
+            }
+        }
+
+        throw new ImportDeniedException([]);
+    }
+
+    /**
      * What the user may do with each article of the plan.
      *
      * @return array<string, ArticleImportAccess> by article UUID in the package

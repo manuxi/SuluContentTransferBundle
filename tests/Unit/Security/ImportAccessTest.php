@@ -47,6 +47,28 @@ class ImportAccessTest extends TestCase
         $this->assertNull($access[self::BLOG]->denial(ArticleAction::CREATE, ['de', 'en'], ['de'], true));
     }
 
+    public function testAddingOrEditingInOneGroupIsEnoughToImport(): void
+    {
+        $blog = ArticleAdmin::getArticleSecurityContext('blog');
+        $faq = ArticleAdmin::getArticleSecurityContext('faq');
+
+        // only "edit" in FAQ is left
+        $this->access([ArticleAdmin::SECURITY_CONTEXT.'::*', $blog.'::*', $faq.'::'.PermissionTypes::ADD])->assertMayImport();
+        // only "add" in Blog is left
+        $this->access([ArticleAdmin::SECURITY_CONTEXT.'::*', $blog.'::'.PermissionTypes::EDIT, $faq.'::*'])->assertMayImport();
+        $this->addToAssertionCount(1);
+    }
+
+    public function testNobodyWithoutAddOrEditInAnyGroupMayImport(): void
+    {
+        // view and live do not count
+        $access = $this->access(['*::'.PermissionTypes::ADD, '*::'.PermissionTypes::EDIT]);
+
+        $this->expectException(ImportDeniedException::class);
+
+        $access->assertMayImport();
+    }
+
     public function testPermissionsAreCheckedInTheContextOfTheGroupAndTheLanguage(): void
     {
         $this->access([])->describe($this->plan());

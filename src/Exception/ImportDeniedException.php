@@ -17,7 +17,9 @@ class ImportDeniedException extends ContentTransferException
     public function __construct(public readonly array $reasons)
     {
         parent::__construct(
-            \sprintf('You do not have the permission to import: %s.', implode(', ', array_keys($reasons))),
+            [] === $reasons
+                ? 'You do not have the permission to import articles.'
+                : \sprintf('You do not have the permission to import: %s.', implode(', ', array_keys($reasons))),
             self::REASON,
         );
     }

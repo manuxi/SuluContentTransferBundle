@@ -62,6 +62,17 @@ class ImportControllerTest extends TemporaryDirectoryTestCase
         $this->assertSame(['token' => self::TOKEN, 'articles' => []], $this->json($response));
     }
 
+    public function testAnalyzeIsRefusedToUsersWhoMayNotImportAtAll(): void
+    {
+        $this->access->method('assertMayImport')->willThrowException(new ImportDeniedException([]));
+        $this->analyzer->expects($this->never())->method('analyze');
+
+        $response = $this->controller()->analyze($this->multipart($this->upload('package.sulu-transfer.zip', 'zip bytes')));
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('import.denied', $this->json($response)['code']);
+    }
+
     public function testAnalyzeWithoutAFileIsABadRequest(): void
     {
         $response = $this->controller()->analyze(new Request());

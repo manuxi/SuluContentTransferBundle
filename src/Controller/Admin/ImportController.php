@@ -50,6 +50,7 @@ class ImportController
     public function analyze(Request $request): JsonResponse
     {
         try {
+            $this->access->assertMayImport();
             $file = $this->uploads->validate($request);
             $plan = $this->analyzer->analyze($file->getPathname());
 
