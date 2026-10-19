@@ -107,14 +107,14 @@ class MediaExporterTest extends TemporaryDirectoryTestCase
 
     private function medium(int $id, string $name, string $content, int $version = 2): Media
     {
-        $this->stored['segment-' . $id . '-' . $version] = $content;
-        $this->stored['old-' . $id] = 'previous version of the file';
+        $this->stored['segment-'.$id.'-'.$version] = $content;
+        $this->stored['old-'.$id] = 'previous version of the file';
 
         $file = new File();
         $file->setVersion($version);
 
-        $old = (new FileVersion())->setVersion(1)->setName('old-' . $name)->setSize(strlen('previous version of the file'))->setStorageOptions(['fileName' => 'old-' . $id]);
-        $current = (new FileVersion())->setVersion($version)->setName($name)->setSize(strlen($content))->setMimeType('image/jpeg')->setStorageOptions(['fileName' => 'segment-' . $id . '-' . $version]);
+        $old = (new FileVersion())->setVersion(1)->setName('old-'.$name)->setSize(\strlen('previous version of the file'))->setStorageOptions(['fileName' => 'old-'.$id]);
+        $current = (new FileVersion())->setVersion($version)->setName($name)->setSize(\strlen($content))->setMimeType('image/jpeg')->setStorageOptions(['fileName' => 'segment-'.$id.'-'.$version]);
         $file->addFileVersion($old)->addFileVersion($current);
 
         $media = new Media();

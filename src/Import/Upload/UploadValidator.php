@@ -28,7 +28,7 @@ class UploadValidator
     }
 
     /**
-     * @throws UploadTooLargeException when the server did not accept the upload because of its size
+     * @throws UploadTooLargeException  when the server did not accept the upload because of its size
      * @throws ContentTransferException for any other upload that cannot be used
      */
     public function validate(Request $request): UploadedFile

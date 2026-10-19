@@ -24,6 +24,21 @@ class ArticleSecurityContextsTest extends TestCase
         $this->assertSame(ArticleAdmin::getArticleSecurityContext('faq'), $contexts->forTemplateKey('question'));
     }
 
+    public function testAllContextsAreTheBaseContextAndOneForEachGroup(): void
+    {
+        $contexts = $this->contexts([
+            GroupProviderInterface::DEFAULT_GROUP => new FormGroup(GroupProviderInterface::DEFAULT_GROUP, 'Default', ['plain']),
+            'blog' => new FormGroup('blog', 'Blog', ['post']),
+            'faq' => new FormGroup('faq', 'FAQ', ['question']),
+        ]);
+
+        $this->assertSame(
+            [ArticleAdmin::SECURITY_CONTEXT, ArticleAdmin::getArticleSecurityContext('blog'), ArticleAdmin::getArticleSecurityContext('faq')],
+            $contexts->all(),
+        );
+        $this->assertSame([ArticleAdmin::SECURITY_CONTEXT], $this->contexts(['blog' => new FormGroup('blog', 'Blog', ['post'])])->all());
+    }
+
     public function testDefaultGroupAndSingleGroupUseTheBaseContext(): void
     {
         $several = $this->contexts([

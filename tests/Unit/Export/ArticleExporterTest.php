@@ -96,7 +96,7 @@ class ArticleExporterTest extends TemporaryDirectoryTestCase
             'template' => 'tutorial',
             'locale' => $content->getLocale(),
             'stage' => $content->getStage(),
-            'title' => 'live' === $content->getStage() ? 'Title ' . $content->getLocale() . ' (live)' : 'Title ' . $content->getLocale() . ' (draft)',
+            'title' => 'live' === $content->getStage() ? 'Title '.$content->getLocale().' (live)' : 'Title '.$content->getLocale().' (draft)',
             'changed' => 'de' === $content->getLocale() ? '2026-10-18T10:00:00+02:00' : '2026-10-18T12:00:00+02:00',
             'published' => '2026-10-17T09:00:00+02:00',
             'mainPage' => '22222222-2222-4222-8222-222222222222',
@@ -118,17 +118,17 @@ class ArticleExporterTest extends TemporaryDirectoryTestCase
         $suluReferences->method('collect')->willReturn([]);
 
         $this->mediaExporter = $this->createMock(MediaExporter::class);
-        $this->mediaExporter->method('export')->willReturnCallback(function (array $ids, string $directory, bool $keepFiles): MediaExport {
+        $this->mediaExporter->method('export')->willReturnCallback(static function (array $ids, string $directory, bool $keepFiles): MediaExport {
             $entries = [];
             $files = [];
             $rows = [];
             foreach ($ids as $id) {
-                $meta = new MediaMeta('image-' . $id . '.jpg', 'image/jpeg', 3, self::SHA);
-                $entries[$id] = new MediaEntry($id, $meta, 'image-' . $id . '.jpg');
-                $rows[] = ['id' => $id, 'filename' => 'image-' . $id . '.jpg', 'size' => 3, 'sha256' => self::SHA];
+                $meta = new MediaMeta('image-'.$id.'.jpg', 'image/jpeg', 3, self::SHA);
+                $entries[$id] = new MediaEntry($id, $meta, 'image-'.$id.'.jpg');
+                $rows[] = ['id' => $id, 'filename' => 'image-'.$id.'.jpg', 'size' => 3, 'sha256' => self::SHA];
                 if ($keepFiles) {
-                    file_put_contents($directory . '/media-' . $id, 'abc');
-                    $files[$id] = $directory . '/media-' . $id;
+                    file_put_contents($directory.'/media-'.$id, 'abc');
+                    $files[$id] = $directory.'/media-'.$id;
                 }
             }
 

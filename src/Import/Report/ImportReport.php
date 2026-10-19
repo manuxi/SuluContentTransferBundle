@@ -10,11 +10,11 @@ namespace Manuxi\SuluContentTransferBundle\Import\Report;
 final class ImportReport
 {
     /**
-     * @param list<ArticleResult>                                                    $articles
-     * @param list<MediaResult>                                                      $media
-     * @param list<array{id: int, key: ?string, name: string, path: string}>        $categories categories the run created
-     * @param list<array{id: int, name: string}>                                     $tags       tags the run created
-     * @param list<string>                                                           $errors     problems that are not tied to one article
+     * @param list<ArticleResult>                                            $articles
+     * @param list<MediaResult>                                              $media
+     * @param list<array{id: int, key: ?string, name: string, path: string}> $categories categories the run created
+     * @param list<array{id: int, name: string}>                             $tags       tags the run created
+     * @param list<string>                                                   $errors     problems that are not tied to one article
      */
     public function __construct(
         public readonly string $token,

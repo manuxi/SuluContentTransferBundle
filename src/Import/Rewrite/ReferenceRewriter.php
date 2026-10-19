@@ -112,7 +112,7 @@ final class ReferenceRewriter
     {
         $result = preg_replace_callback(
             '#<sulu-link\b([^>]*)>(.*?)</sulu-link>#s',
-            function (array $match) use ($locale, $path, $map, &$removed): string {
+            static function (array $match) use ($locale, $path, $map, &$removed): string {
                 $attributes = $match[1];
                 if (1 !== preg_match('/\bprovider="([^"]*)"/', $attributes, $provider) || 1 !== preg_match('/\bhref="([^"]*)"/', $attributes, $href)) {
                     return $match[0];

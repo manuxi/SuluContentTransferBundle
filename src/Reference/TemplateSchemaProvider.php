@@ -33,7 +33,7 @@ class TemplateSchemaProvider
      */
     public function getSchema(string $templateKey, string $locale): TemplateSchema
     {
-        $cacheKey = $templateKey . '|' . $locale;
+        $cacheKey = $templateKey.'|'.$locale;
         if (isset($this->cache[$cacheKey])) {
             return $this->cache[$cacheKey];
         }

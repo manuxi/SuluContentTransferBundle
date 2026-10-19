@@ -18,16 +18,16 @@ final class ArticleResult
     public const FAILED = 'failed';
 
     /**
-     * @param string                                         $sourceUuid      UUID in the package
+     * @param string                                                              $sourceUuid     UUID in the package
      * @param self::CREATED|self::UPDATED|self::COPIED|self::SKIPPED|self::FAILED $status
-     * @param ?string                                        $targetUuid      UUID on this system (null if nothing was written)
-     * @param list<string>                                   $locales         languages that were written
-     * @param array<string, string>                          $skippedLocales  language => reason the plan gave
-     * @param list<string>                                   $published       languages that were published
-     * @param array<string, array{from: string, to: string}> $renamedUrls     addresses that were taken and got a number
-     * @param list<RemovedReference>                         $removed         references that were removed
-     * @param array<string, string>                          $adminLinks      language => path into the admin
-     * @param ?string                                        $message         why the article was skipped, or what failed
+     * @param ?string                                                             $targetUuid     UUID on this system (null if nothing was written)
+     * @param list<string>                                                        $locales        languages that were written
+     * @param array<string, string>                                               $skippedLocales language => reason the plan gave
+     * @param list<string>                                                        $published      languages that were published
+     * @param array<string, array{from: string, to: string}>                      $renamedUrls    addresses that were taken and got a number
+     * @param list<RemovedReference>                                              $removed        references that were removed
+     * @param array<string, string>                                               $adminLinks     language => path into the admin
+     * @param ?string                                                             $message        why the article was skipped, or what failed
      */
     public function __construct(
         public readonly string $sourceUuid,

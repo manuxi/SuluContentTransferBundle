@@ -12,12 +12,12 @@ use Manuxi\SuluContentTransferBundle\Format\Package;
 final class ExportResult
 {
     /**
-     * @param array<int, string>                $mediaFiles     media id → local file for the package writer
-     * @param list<ExportedArticle>             $articles       one entry per requested article, in the requested order
-     * @param list<string>                      $warnings       things the user should know (missing images, references without lookup)
-     * @param array<string, list<int|string>>   $missing        referenced ids the system no longer knows, by kind
-     * @param array<string, list<int|string>>   $withoutLookup  referenced ids of kinds the manifest cannot describe, by kind
-     * @param array<string, int>                $referenceCount number of references found, by kind
+     * @param array<int, string>              $mediaFiles     media id → local file for the package writer
+     * @param list<ExportedArticle>           $articles       one entry per requested article, in the requested order
+     * @param list<string>                    $warnings       things the user should know (missing images, references without lookup)
+     * @param array<string, list<int|string>> $missing        referenced ids the system no longer knows, by kind
+     * @param array<string, list<int|string>> $withoutLookup  referenced ids of kinds the manifest cannot describe, by kind
+     * @param array<string, int>              $referenceCount number of references found, by kind
      */
     public function __construct(
         public readonly Package $package,

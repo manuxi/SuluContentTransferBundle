@@ -6,6 +6,7 @@ namespace Manuxi\SuluContentTransferBundle\Security;
 
 use Manuxi\SuluContentTransferBundle\DependencyInjection\SuluContentTransferExtension;
 use Manuxi\SuluContentTransferBundle\Exception\ImportDeniedException;
+use Manuxi\SuluContentTransferBundle\Export\ArticleTemplates;
 use Manuxi\SuluContentTransferBundle\Import\Execute\ImportDecisions;
 use Manuxi\SuluContentTransferBundle\Import\Plan\ArticleAction;
 use Manuxi\SuluContentTransferBundle\Import\Plan\ImportPlan;
@@ -35,7 +36,28 @@ class ImportAccess
         private readonly ArticleSecurityContexts $contexts,
         private readonly MediaCollectionLookup $collections,
         private readonly SystemCollectionManagerInterface $systemCollections,
+        private readonly ArticleTemplates $presentTemplates,
     ) {
+    }
+
+    /**
+     * Whether the user may import at all: add or edit articles in at least one article group. The analysis of a package
+     * (which tells what exists on this system) is refused to everybody else.
+     *
+     * @throws ImportDeniedException
+     */
+    public function assertMayImport(): void
+    {
+        foreach ($this->contexts->all() as $context) {
+            $condition = new SecurityCondition($context);
+            if ($this->securityChecker->hasPermission($condition, PermissionTypes::ADD)
+                || $this->securityChecker->hasPermission($condition, PermissionTypes::EDIT)
+            ) {
+                return;
+            }
+        }
+
+        throw new ImportDeniedException([]);
     }
 
     /**
@@ -47,6 +69,10 @@ class ImportAccess
     {
         $collectionCache = [];
         $access = [];
+        $existing = $this->presentTemplates->templateKeys(array_values(array_filter(array_map(
+            static fn (PlanArticle $article): ?string => $article->targetId,
+            $plan->articles,
+        ))));
         foreach ($plan->articles as $article) {
             $locales = $article->importLocales();
             $context = $this->contexts->forTemplateKey($article->templateKey);
@@ -67,10 +93,14 @@ class ImportAccess
                 }
             }
 
+            // Updating writes into the article that exists here, whatever template the package says: the group it
+            // is in now counts as well, or "edit" in one group would be enough to overwrite an article of any other.
+            $present = null !== $article->targetId ? ($existing[strtolower($article->targetId)] ?? []) : [];
+
             $access[$article->uuid] = new ArticleImportAccess(
                 $this->allowed($context, $locales, PermissionTypes::ADD),
-                $this->allowed($context, $locales, PermissionTypes::EDIT),
-                $this->allowed($context, $locales, PermissionTypes::LIVE),
+                $this->allowedInPresentGroup($present, $this->allowed($context, $locales, PermissionTypes::EDIT), PermissionTypes::EDIT),
+                $this->allowedInPresentGroup($present, $this->allowed($context, $locales, PermissionTypes::LIVE), PermissionTypes::LIVE),
                 $mediaCreate,
                 $mediaTexts,
             );
@@ -141,6 +171,30 @@ class ImportAccess
         }
 
         return $published;
+    }
+
+    /**
+     * Of the languages the user may write according to the template of the package, those that the user may also write
+     * in the group of the article that exists on this system (language → template key there; empty: no such article).
+     *
+     * @param array<string, string> $present
+     * @param list<string>          $locales
+     *
+     * @return list<string>
+     */
+    private function allowedInPresentGroup(array $present, array $locales, string $permission): array
+    {
+        if ([] === $present) {
+            return $locales;
+        }
+
+        $fallback = reset($present);
+
+        return array_values(array_filter($locales, function (string $locale) use ($present, $fallback, $permission): bool {
+            $context = $this->contexts->forTemplateKey($present[$locale] ?? $fallback);
+
+            return $this->securityChecker->hasPermission(new SecurityCondition($context, $locale), $permission);
+        }));
     }
 
     /**

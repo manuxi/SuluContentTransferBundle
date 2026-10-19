@@ -370,6 +370,38 @@ class ImportExecutorTest extends TemporaryDirectoryTestCase
         $this->assertNotNull($this->mappings->findMapping(self::SOURCE_INSTANCE, 'articles', self::SECOND));
     }
 
+    public function testTheReportNeverCarriesPathsOfTheServer(): void
+    {
+        $this->writePackage($this->package(true));
+        $this->articleWriter->failFor = [PackageFixtures::ARTICLE_1];
+        $this->articleWriter->failMessage = 'Unable to write file at location: /var/www/app/var/storage/default/a.jpg (C:\\srv\\app\\var\\a.jpg)';
+        $logger = new class extends \Psr\Log\AbstractLogger {
+            /** @var list<string> */
+            public array $messages = [];
+
+            public function log($level, string|\Stringable $message, array $context = []): void
+            {
+                $this->messages[] = (string) $message;
+            }
+        };
+        $executor = $this->executor();
+        $executor->setLogger($logger);
+
+        $report = $executor->execute($this->analyze(), new ImportDecisions(), 'editor');
+
+        $message = '';
+        foreach ($report->articles as $article) {
+            if (ArticleResult::FAILED === $article->status) {
+                $message = (string) $article->message;
+            }
+        }
+        $this->assertStringContainsString('Unable to write file at location', $message);
+        $this->assertStringNotContainsString('/var/www', $message);
+        $this->assertStringNotContainsString('C:\\srv', $message);
+        // the log keeps the full text for the administrator
+        $this->assertStringContainsString('/var/www/app/var/storage/default/a.jpg', implode("\n", $logger->messages));
+    }
+
     public function testRefusesToStartWhenTheStateChangedSinceTheAnalysis(): void
     {
         $token = $this->analyze();

@@ -33,6 +33,7 @@ use Manuxi\SuluContentTransferBundle\Import\Write\Transaction;
 use Manuxi\SuluContentTransferBundle\Package\ExtractedPackage;
 use Manuxi\SuluContentTransferBundle\Package\PackageReader;
 use Manuxi\SuluContentTransferBundle\Repository\TransferMappings;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -61,6 +62,8 @@ class ImportExecutor
     /** @var callable(): string */
     private $uuidGenerator;
 
+    private ?LoggerInterface $logger = null;
+
     /** @var array<string, int> tag name => id on this system */
     private array $tagIds = [];
 
@@ -87,6 +90,11 @@ class ImportExecutor
         ?callable $uuidGenerator = null,
     ) {
         $this->uuidGenerator = $uuidGenerator ?? static fn (): string => Uuid::v7()->toRfc4122();
+    }
+
+    public function setLogger(?LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -194,8 +202,8 @@ class ImportExecutor
     // what is needed
 
     /**
-     * @param array<string, ArticleEntry>                                                                           $entries
-     * @param array<string, array{article: PlanArticle, action: string, locales: list<string>, target: string}>   $jobs
+     * @param array<string, ArticleEntry>                                                                       $entries
+     * @param array<string, array{article: PlanArticle, action: string, locales: list<string>, target: string}> $jobs
      *
      * @return array{media: array<int, true>, categories: array<string, true>, tags: list<string>}
      */
@@ -270,7 +278,7 @@ class ImportExecutor
                 return $this->taxonomy->createTag($name);
             });
         } catch (\Throwable $exception) { // @phpstan-ignore-line a failing unit of work is reported, the others go on
-            $errors[] = \sprintf('The tag "%s" could not be created: %s', $name, $exception->getMessage());
+            $errors[] = \sprintf('The tag "%s" could not be created: %s', $name, $this->describeFailure($exception, 'tag '.$name));
 
             return null;
         }
@@ -331,7 +339,7 @@ class ImportExecutor
                         return $this->taxonomy->createCategory($category->key, $category->names, $parentId);
                     });
                 } catch (\Throwable $exception) { // @phpstan-ignore-line a failing unit of work is reported, the others go on
-                    $errors[] = \sprintf('The category "%s" could not be created: %s', $category->label(), $exception->getMessage());
+                    $errors[] = \sprintf('The category "%s" could not be created: %s', $category->label(), $this->describeFailure($exception, 'category '.$category->label()));
 
                     continue;
                 }
@@ -381,7 +389,7 @@ class ImportExecutor
             try {
                 $results[] = $this->transaction->run(fn (): MediaResult => $this->importOneMedium($extracted, $plan, $decisions, $medium, $entry, $map, $errors, $fallbackLocale));
             } catch (\Throwable $exception) { // @phpstan-ignore-line a failing unit of work is reported, the others go on
-                $results[] = new MediaResult($id, $medium->filename, MediaResult::FAILED, null, false, [], $exception->getMessage());
+                $results[] = new MediaResult($id, $medium->filename, MediaResult::FAILED, null, false, [], $this->describeFailure($exception, 'image '.$medium->filename));
             }
         }
 
@@ -503,9 +511,19 @@ class ImportExecutor
                 [],
                 [],
                 [],
-                $exception->getMessage(),
+                $this->describeFailure($exception, 'article '.$article->uuid),
             );
         }
+    }
+
+    /**
+     * The text for the report (without paths of the server); the full exception goes to the log.
+     */
+    private function describeFailure(\Throwable $exception, string $what): string
+    {
+        $this->logger?->error(\sprintf('Content transfer: %s could not be imported: %s', $what, $exception->getMessage()), ['exception' => $exception]);
+
+        return ImportFailure::describe($exception);
     }
 
     /**

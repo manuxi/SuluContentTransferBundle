@@ -34,7 +34,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
                 throw $failure;
             }
 
-            return $result ?? $this->result();
+            return $result ?? $this->exportResult();
         });
 
         $workDirectory = new WorkDirectory($this->workDir);
@@ -43,7 +43,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
         return new CommandTester($command);
     }
 
-    private function result(bool $withMedia = true): ExportResult
+    private function exportResult(bool $withMedia = true): ExportResult
     {
         $fixture = PackageFixtures::package($this->directory, $withMedia);
 
@@ -63,7 +63,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
 
     public function testWritesThePackageAndPrintsTheReport(): void
     {
-        $target = $this->directory . '/out.sulu-transfer.zip';
+        $target = $this->directory.'/out.sulu-transfer.zip';
         $tester = $this->tester();
 
         $status = $tester->execute(['uuid' => [PackageFixtures::ARTICLE_1], '--output' => $target]);
@@ -90,7 +90,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
 
     public function testPassesTheOptionsOnAndReleasesTheTemporaryFiles(): void
     {
-        $tester = $this->tester($this->result(false));
+        $tester = $this->tester($this->exportResult(false));
         $this->exporter->expects($this->once())->method('release');
 
         $tester->execute([
@@ -98,7 +98,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
             '--locale' => ['de', 'en'],
             '--stage' => 'draft',
             '--no-media-files' => true,
-            '--output' => $this->directory . '/out.zip',
+            '--output' => $this->directory.'/out.zip',
         ]);
 
         $this->assertNotNull($this->request);
@@ -125,7 +125,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
         $this->assertSame([], $this->request->locales);
         $this->assertSame('live', $this->request->stage);
         $this->assertTrue($this->request->includeMediaFiles);
-        $files = glob($this->directory . '/*-erste-schritte.sulu-transfer.zip');
+        $files = glob($this->directory.'/*-erste-schritte.sulu-transfer.zip');
         $this->assertIsArray($files);
         $this->assertCount(1, $files, 'file name from the date and the first title');
         $this->assertMatchesRegularExpression('~/\d{4}-\d{2}-\d{2}-erste-schritte\.sulu-transfer\.zip$~', $files[0]);
@@ -135,11 +135,11 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
     {
         $tester = $this->tester(null, new ContentTransferException('Article not found: abc.', 'export.article_not_found'));
 
-        $status = $tester->execute(['uuid' => ['abc'], '--output' => $this->directory . '/out.zip']);
+        $status = $tester->execute(['uuid' => ['abc'], '--output' => $this->directory.'/out.zip']);
 
         $this->assertSame(1, $status);
         $this->assertStringContainsString('Article not found: abc.', $tester->getDisplay());
-        $this->assertFileDoesNotExist($this->directory . '/out.zip');
+        $this->assertFileDoesNotExist($this->directory.'/out.zip');
     }
 
     public function testNeedsAtLeastOneArticle(): void
@@ -154,7 +154,7 @@ class ExportCommandTest extends TemporaryDirectoryTestCase
     {
         $tester = $this->tester();
 
-        $status = $tester->execute(['uuid' => [PackageFixtures::ARTICLE_1], '--stage' => 'preview', '--output' => $this->directory . '/out.zip']);
+        $status = $tester->execute(['uuid' => [PackageFixtures::ARTICLE_1], '--stage' => 'preview', '--output' => $this->directory.'/out.zip']);
 
         $this->assertSame(1, $status);
         $this->assertStringContainsString('Unknown version "preview"', $tester->getDisplay());

@@ -42,10 +42,7 @@ final class ImportDecisions
             throw new ContentTransferException(\sprintf('The action "%s" for the article %s is unknown.', $action, $article->uuid), 'import.action_unknown');
         }
         if (!\in_array($action, $article->allowedActions, true)) {
-            throw new ContentTransferException(
-                \sprintf('The action "%s" is not allowed for the article %s (allowed: %s).', $action, $article->uuid, implode(', ', $article->allowedActions)),
-                'import.action_not_allowed',
-            );
+            throw new ContentTransferException(\sprintf('The action "%s" is not allowed for the article %s (allowed: %s).', $action, $article->uuid, implode(', ', $article->allowedActions)), 'import.action_not_allowed');
         }
 
         return $action;

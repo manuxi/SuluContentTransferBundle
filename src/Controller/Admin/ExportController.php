@@ -11,6 +11,7 @@ use Manuxi\SuluContentTransferBundle\Export\ExportedArticle;
 use Manuxi\SuluContentTransferBundle\Export\ExportFileName;
 use Manuxi\SuluContentTransferBundle\Export\ExportRequest;
 use Manuxi\SuluContentTransferBundle\Export\ExportResult;
+use Manuxi\SuluContentTransferBundle\Import\Plan\ImportPlan;
 use Manuxi\SuluContentTransferBundle\Package\PackageWriter;
 use Manuxi\SuluContentTransferBundle\Package\WorkDirectory;
 use Manuxi\SuluContentTransferBundle\Security\ExportAccess;
@@ -24,7 +25,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * POST /admin/api/content-transfer/export/preview   body: {"ids": [...], "locales": [...], "stage": "live"}   query: locale
- * POST /admin/api/content-transfer/export           body: {"ids": [...], "locales": [...], "stage": "live", "includeMediaFiles": true}
+ * POST /admin/api/content-transfer/export           body: {"ids": [...], "locales": [...], "stage": "live", "includeMediaFiles": true}.
  *
  * The preview tells what an export of the selection would contain: the languages the articles have (and the user may
  * see), the images with their size, and the articles the selection links to but does not contain. The export answers
@@ -80,6 +81,9 @@ class ExportController
         } catch (ContentTransferException $exception) {
             return $this->error($exception);
         }
+
+        // A download that was aborted by the browser leaves its file behind: clean up what is older than a day.
+        $this->workDirectory->purgeOlderThan(ImportPlan::LIFETIME_SECONDS);
 
         // The file is written completely before the answer starts: a failure then still gives a proper error message.
         $token = $this->workDirectory->create();

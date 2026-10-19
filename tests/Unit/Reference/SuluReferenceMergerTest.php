@@ -17,7 +17,7 @@ class SuluReferenceMergerTest extends TestCase
      */
     private static function lines(array $references): array
     {
-        return array_map(static fn (ArticleReference $r): string => $r->path . ' | ' . $r->resourceKey . ' | ' . $r->id, $references);
+        return array_map(static fn (ArticleReference $r): string => $r->path.' | '.$r->resourceKey.' | '.$r->id, $references);
     }
 
     public function testTranslatesThePathsOfSuluToThePathsOfTheAdminForm(): void

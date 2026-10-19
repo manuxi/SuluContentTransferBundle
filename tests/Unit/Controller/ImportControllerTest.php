@@ -17,9 +17,9 @@ use Manuxi\SuluContentTransferBundle\Import\ImportExecutor;
 use Manuxi\SuluContentTransferBundle\Import\Plan\ImportPlan;
 use Manuxi\SuluContentTransferBundle\Import\PlanPresenter;
 use Manuxi\SuluContentTransferBundle\Import\PlanStore;
-use Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator;
 use Manuxi\SuluContentTransferBundle\Import\Report\ArticleResult;
 use Manuxi\SuluContentTransferBundle\Import\Report\ImportReport;
+use Manuxi\SuluContentTransferBundle\Import\Upload\UploadValidator;
 use Manuxi\SuluContentTransferBundle\Package\PackageLimits;
 use Manuxi\SuluContentTransferBundle\Security\ImportAccess;
 use Manuxi\SuluContentTransferBundle\Tests\Support\TemporaryDirectoryTestCase;
@@ -60,6 +60,17 @@ class ImportControllerTest extends TemporaryDirectoryTestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame(['token' => self::TOKEN, 'articles' => []], $this->json($response));
+    }
+
+    public function testAnalyzeIsRefusedToUsersWhoMayNotImportAtAll(): void
+    {
+        $this->access->method('assertMayImport')->willThrowException(new ImportDeniedException([]));
+        $this->analyzer->expects($this->never())->method('analyze');
+
+        $response = $this->controller()->analyze($this->multipart($this->upload('package.sulu-transfer.zip', 'zip bytes')));
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('import.denied', $this->json($response)['code']);
     }
 
     public function testAnalyzeWithoutAFileIsABadRequest(): void

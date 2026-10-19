@@ -33,6 +33,22 @@ class ArticleSecurityContexts
     }
 
     /**
+     * Every context an article can be in: the base context and one per article group.
+     *
+     * @return list<string>
+     */
+    public function all(): array
+    {
+        $groups = $this->groups();
+        $contexts = [ArticleAdmin::SECURITY_CONTEXT];
+        foreach ($groups as $group) {
+            $contexts[] = $this->contextOfGroup($groups, $group->identifier);
+        }
+
+        return array_values(array_unique($contexts));
+    }
+
+    /**
      * The context of an article with this template; the base context if no group contains the template.
      */
     public function forTemplateKey(?string $templateKey): string

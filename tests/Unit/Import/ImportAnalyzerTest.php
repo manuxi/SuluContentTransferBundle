@@ -215,7 +215,7 @@ class ImportAnalyzerTest extends TemporaryDirectoryTestCase
 
     public function testFailedAnalysisLeavesNothingInTheWorkDirectory(): void
     {
-        $this->articles = new class() extends FakeArticleTarget {
+        $this->articles = new class extends FakeArticleTarget {
             public function templateKeys(): array
             {
                 throw new \RuntimeException('boom');

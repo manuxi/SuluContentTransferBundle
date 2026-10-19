@@ -46,7 +46,7 @@ class ExportControllerTest extends TemporaryDirectoryTestCase
                 throw $exportFailure;
             }
 
-            return $this->result($withMedia && $request->includeMediaFiles);
+            return $this->exportResult($withMedia && $request->includeMediaFiles);
         });
         $this->exporter->method('release')->willReturnCallback(function (): void {
             ++$this->released;
@@ -67,7 +67,7 @@ class ExportControllerTest extends TemporaryDirectoryTestCase
         return new ExportController($this->exporter, new PackageWriter(new PackageLimits(), $workDirectory), $workDirectory, $this->access);
     }
 
-    private function result(bool $withMedia): ExportResult
+    private function exportResult(bool $withMedia): ExportResult
     {
         $fixture = PackageFixtures::package($this->directory, $withMedia);
 
@@ -194,6 +194,20 @@ class ExportControllerTest extends TemporaryDirectoryTestCase
         $this->assertSame(0, self::countFiles($this->workDir));
     }
 
+    public function testLeftoversOfAnAbortedDownloadAreRemovedByTheNextExport(): void
+    {
+        $workDirectory = new WorkDirectory($this->workDir);
+        $stale = $workDirectory->create();
+        touch($workDirectory->path($stale), time() - 2 * 86400);
+        $recent = $workDirectory->create();
+
+        $this->controller()->export($this->request(['ids' => [self::ARTICLE_1]]));
+
+        $this->assertDirectoryDoesNotExist($this->workDir.'/'.$stale);
+        // the file of a download that is still running stays
+        $this->assertDirectoryExists($this->workDir.'/'.$recent);
+    }
+
     public function testDeniedUserGetsForbiddenForPreviewAndExport(): void
     {
         $controller = $this->controller(new ExportDeniedException([self::ARTICLE_1]));
@@ -277,7 +291,7 @@ class ExportControllerTest extends TemporaryDirectoryTestCase
         yield 'id not a string' => [['ids' => [5]], 'export.bad_request'];
         yield 'locale with path' => [['ids' => [self::ARTICLE_1], 'locales' => ['../de']], 'export.bad_request'];
         yield 'stage not a string' => [['ids' => [self::ARTICLE_1], 'stage' => ['live']], 'export.unknown_stage'];
-        yield 'too many' => [['ids' => array_map(static fn (int $i): string => sprintf('4b1c0b3a-0000-4000-8000-%012d', $i), range(1, 501))], 'export.too_many'];
+        yield 'too many' => [['ids' => array_map(static fn (int $i): string => \sprintf('4b1c0b3a-0000-4000-8000-%012d', $i), range(1, 501))], 'export.too_many'];
     }
 
     public function testUnknownStageIsRejectedByTheRequest(): void

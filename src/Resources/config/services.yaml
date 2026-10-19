@@ -238,6 +238,8 @@ services:
             - '@Manuxi\SuluContentTransferBundle\Repository\TransferMappings'
             - '@Manuxi\SuluContentTransferBundle\Import\Rewrite\ReferenceRewriter'
             - '@Manuxi\SuluContentTransferBundle\Import\Write\AdminLinks'
+        calls:
+            - [setLogger, ['@?logger']]
 
     Manuxi\SuluContentTransferBundle\Command\ImportCommand:
         arguments:
@@ -291,6 +293,7 @@ services:
             - '@Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts'
             - '@Manuxi\SuluContentTransferBundle\Security\MediaCollectionLookup'
             - '@sulu_media.system_collections.manager'
+            - '@Manuxi\SuluContentTransferBundle\Export\ArticleTemplates'
 
     Manuxi\SuluContentTransferBundle\Import\PlanPresenter:
         arguments:

@@ -17,8 +17,8 @@ final class MediaResult
 
     /**
      * @param self::CREATED|self::REUSED|self::NEW_VERSION|self::MISSING|self::FAILED $outcome
-     * @param bool         $textsUpdated the titles, descriptions and copyright of an existing image were overwritten
-     * @param list<string> $warnings     things that could not be taken over (a crop format this system does not know, ...)
+     * @param bool                                                                    $textsUpdated the titles, descriptions and copyright of an existing image were overwritten
+     * @param list<string>                                                            $warnings     things that could not be taken over (a crop format this system does not know, ...)
      */
     public function __construct(
         public readonly int $sourceId,

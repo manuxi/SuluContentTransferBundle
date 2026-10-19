@@ -18,7 +18,7 @@ final class ImportFixtures
     public const PAGE = 'aaaaaaaa-0000-4000-8000-000000000001';
 
     /**
-     * @param array<string, array<string, mixed>> $data  extra fields of the article data per language (default: de and en)
+     * @param array<string, array<string, mixed>> $data       extra fields of the article data per language (default: de and en)
      * @param list<ArticleReference>              $references
      */
     public static function entry(string $uuid = self::UUID, array $data = [], array $references = [], string $stage = 'live', string $changed = '2026-10-17T09:00:00+00:00'): ArticleEntry

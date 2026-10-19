@@ -327,7 +327,7 @@ TXT);
     {
         $names = [$category->label()];
         $seen = [];
-        for ($parent = $category->parentRef; null !== $parent && !isset($seen[$parent]); ) {
+        for ($parent = $category->parentRef; null !== $parent && !isset($seen[$parent]);) {
             $seen[$parent] = true;
             $found = null;
             foreach ($plan->categories as $candidate) {

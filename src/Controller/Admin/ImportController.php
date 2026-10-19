@@ -22,7 +22,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  * POST   /admin/api/content-transfer/import/analyze   multipart, field "file": the package   → the plan and its token
  * POST   /admin/api/content-transfer/import/execute   body: {"token": ..., "actions": {uuid: action}, "locales": [...]|null,
  *                                                     "keepStatus": false, "overwriteMediaMeta": false}   → the report
- * DELETE /admin/api/content-transfer/import/{token}   throws away an analysis that is not carried out
+ * DELETE /admin/api/content-transfer/import/{token}   throws away an analysis that is not carried out.
  *
  * The analysis is the one of the console (--dry-run) and the execution the one of the console command; the controller
  * only adds the permissions of the logged-in user, who is also the creator and changer of everything that is written.
@@ -50,6 +50,7 @@ class ImportController
     public function analyze(Request $request): JsonResponse
     {
         try {
+            $this->access->assertMayImport();
             $file = $this->uploads->validate($request);
             $plan = $this->analyzer->analyze($file->getPathname());
 

@@ -171,11 +171,11 @@ class ArticleExporter
     }
 
     /**
-     * @param list<ArticleEntry>      $entries
-     * @param list<ManifestItem>      $items
-     * @param list<ExportedArticle>   $report
-     * @param list<ArticleReference>  $references
-     * @param list<string>            $locales
+     * @param list<ArticleEntry>     $entries
+     * @param list<ManifestItem>     $items
+     * @param list<ExportedArticle>  $report
+     * @param list<ArticleReference> $references
+     * @param list<string>           $locales
      */
     private function finish(ExportRequest $request, array $entries, array $items, array $report, array $references, array $locales, string $token): ExportResult
     {
