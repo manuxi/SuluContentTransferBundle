@@ -19,26 +19,42 @@ use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 
 class ContentTransferAdminTest extends TestCase
 {
-    public function testEveryArticleListGetsTheExportAction(): void
+    public function testEveryArticleListGetsTheExportAndTheImportAction(): void
     {
         $views = $this->views();
 
         $this->admin([])->configureViews($views);
 
         foreach (['sulu_article.article.list_blog', 'sulu_article.article.list_faq'] as $name) {
-            $this->assertSame(['sulu_content_transfer.export'], $this->actionTypes($views, $name), $name);
+            $this->assertSame(['sulu_content_transfer.export', 'sulu_content_transfer.import'], $this->actionTypes($views, $name), $name);
         }
         $this->assertSame([], $this->actionTypes($views, 'sulu_snippet.list'));
     }
 
-    public function testListOfAGroupWithoutViewPermissionGetsNoAction(): void
+    public function testListOfAGroupWithoutViewPermissionGetsNoExportAction(): void
     {
         $views = $this->views();
+        $faq = ArticleAdmin::getArticleSecurityContext('faq');
 
-        $this->admin([ArticleAdmin::getArticleSecurityContext('faq')])->configureViews($views);
+        $this->admin([$faq.':'.PermissionTypes::VIEW])->configureViews($views);
 
+        $this->assertSame(['sulu_content_transfer.export', 'sulu_content_transfer.import'], $this->actionTypes($views, 'sulu_article.article.list_blog'));
+        $this->assertSame(['sulu_content_transfer.import'], $this->actionTypes($views, 'sulu_article.article.list_faq'));
+    }
+
+    public function testImportNeedsThePermissionToAddOrToEdit(): void
+    {
+        $blog = ArticleAdmin::getArticleSecurityContext('blog');
+        $faq = ArticleAdmin::getArticleSecurityContext('faq');
+
+        $views = $this->views();
+        $this->admin([$blog.':'.PermissionTypes::ADD, $faq.':'.PermissionTypes::EDIT])->configureViews($views);
+        $this->assertSame(['sulu_content_transfer.export', 'sulu_content_transfer.import'], $this->actionTypes($views, 'sulu_article.article.list_blog'));
+        $this->assertSame(['sulu_content_transfer.export', 'sulu_content_transfer.import'], $this->actionTypes($views, 'sulu_article.article.list_faq'));
+
+        $views = $this->views();
+        $this->admin([$blog.':'.PermissionTypes::ADD, $blog.':'.PermissionTypes::EDIT])->configureViews($views);
         $this->assertSame(['sulu_content_transfer.export'], $this->actionTypes($views, 'sulu_article.article.list_blog'));
-        $this->assertSame([], $this->actionTypes($views, 'sulu_article.article.list_faq'));
     }
 
     public function testActionsOfOtherAdminsStay(): void
@@ -52,7 +68,7 @@ class ContentTransferAdminTest extends TestCase
 
         $this->admin([])->configureViews($views);
 
-        $this->assertSame(['sulu_bulk_actions.actions', 'sulu_content_transfer.export'], $this->actionTypes($views, 'sulu_article.article.list_blog'));
+        $this->assertSame(['sulu_bulk_actions.actions', 'sulu_content_transfer.export', 'sulu_content_transfer.import'], $this->actionTypes($views, 'sulu_article.article.list_blog'));
     }
 
     public function testRunsAfterTheAdminsThatBuildTheLists(): void
@@ -61,13 +77,13 @@ class ContentTransferAdminTest extends TestCase
     }
 
     /**
-     * @param list<string> $deniedContexts
+     * @param list<string> $denied "<context>:<permission>" that the user does not have
      */
-    private function admin(array $deniedContexts): ContentTransferAdmin
+    private function admin(array $denied): ContentTransferAdmin
     {
         $checker = $this->createMock(SecurityCheckerInterface::class);
         $checker->method('hasPermission')->willReturnCallback(
-            static fn (string $context, string $permission): bool => PermissionTypes::VIEW === $permission && !\in_array($context, $deniedContexts, true),
+            static fn (string $context, string $permission): bool => !\in_array($context.':'.$permission, $denied, true),
         );
 
         $provider = $this->createMock(GroupProviderInterface::class);

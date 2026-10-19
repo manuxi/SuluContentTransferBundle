@@ -13,12 +13,14 @@ use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 
 /**
- * Adds the toolbar action "Export" to the article lists of every article group. The action is only offered to users
- * who may view articles in the security context of that group; the server checks every article again.
+ * Adds the toolbar actions "Export package" and "Import package" to the article lists of every article group. Export is
+ * offered to users who may view articles in the security context of that group, import to users who may add or edit
+ * them; the server checks every article again.
  */
 class ContentTransferAdmin extends Admin
 {
     public const EXPORT_TOOLBAR_ACTION = 'sulu_content_transfer.export';
+    public const IMPORT_TOOLBAR_ACTION = 'sulu_content_transfer.import';
 
     public function __construct(
         private readonly SecurityCheckerInterface $securityChecker,
@@ -42,11 +44,18 @@ class ContentTransferAdmin extends Admin
             }
 
             $context = $this->contexts->forListView($name);
-            if (null === $context || !$this->securityChecker->hasPermission($context, PermissionTypes::VIEW)) {
+            if (null === $context) {
                 continue;
             }
 
-            $viewBuilder->addToolbarActions([new ToolbarAction(self::EXPORT_TOOLBAR_ACTION)]);
+            if ($this->securityChecker->hasPermission($context, PermissionTypes::VIEW)) {
+                $viewBuilder->addToolbarActions([new ToolbarAction(self::EXPORT_TOOLBAR_ACTION)]);
+            }
+            if ($this->securityChecker->hasPermission($context, PermissionTypes::ADD)
+                || $this->securityChecker->hasPermission($context, PermissionTypes::EDIT)
+            ) {
+                $viewBuilder->addToolbarActions([new ToolbarAction(self::IMPORT_TOOLBAR_ACTION)]);
+            }
         }
     }
 }

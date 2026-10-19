@@ -276,6 +276,41 @@ services:
             - { name: controller.service_arguments }
             - { name: sulu.context, context: admin }
 
+    # --- admin: import
+
+    Manuxi\SuluContentTransferBundle\Security\DoctrineMediaCollectionLookup:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
+    Manuxi\SuluContentTransferBundle\Security\MediaCollectionLookup:
+        alias: Manuxi\SuluContentTransferBundle\Security\DoctrineMediaCollectionLookup
+
+    Manuxi\SuluContentTransferBundle\Security\ImportAccess:
+        arguments:
+            - '@sulu_security.security_checker'
+            - '@Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts'
+            - '@Manuxi\SuluContentTransferBundle\Security\MediaCollectionLookup'
+            - '@sulu_media.system_collections.manager'
+
+    Manuxi\SuluContentTransferBundle\Import\PlanPresenter:
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Security\ImportAccess'
+            - '@Manuxi\SuluContentTransferBundle\Import\Target\ArticleTarget'
+
+    Manuxi\SuluContentTransferBundle\Controller\Admin\ImportController:
+        public: true
+        arguments:
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportAnalyzer'
+            - '@Manuxi\SuluContentTransferBundle\Import\ImportExecutor'
+            - '@Manuxi\SuluContentTransferBundle\Import\PlanStore'
+            - '@Manuxi\SuluContentTransferBundle\Import\PlanPresenter'
+            - '@Manuxi\SuluContentTransferBundle\Security\ImportAccess'
+            - '@sulu_content_transfer.package_limits'
+            - '@security.token_storage'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: admin }
+
     Manuxi\SuluContentTransferBundle\Admin\ContentTransferAdmin:
         arguments:
             - '@sulu_security.security_checker'
