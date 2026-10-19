@@ -122,7 +122,7 @@ class ImportAnalyzer
                     \sprintf('The image "%s" is known from an earlier import but its file changed. A new file version is added.', $medium->filename),
                     null,
                     null,
-                    ['mediaId' => $medium->sourceId],
+                    ['mediaId' => $medium->sourceId, 'name' => $medium->filename],
                 );
             }
             if ((PlanMedium::CREATE === $medium->action || PlanMedium::NEW_VERSION === $medium->action) && isset($package->media[$medium->sourceId])) {
