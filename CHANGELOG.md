@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.1 - 2026-10-21
+
+### Fixed
+
+- The CSV export of Sulu does not work for articles in Sulu 3.0.x: its dialog calls `/admin/api/articles.csv`, but the article list always answers with JSON, so nothing is downloaded. The article lists no longer offer it: the entry "Export list as CSV" is gone from the dropdown and the button of Sulu is removed, with the toolbar `dropdown` and with `buttons`. Lists of other areas keep their button. If the toolbar of a list cannot be changed, the button stays and a notice is logged.
+
+### Added
+
+- Option `admin.article_csv_export` (default `false`). `true` brings back the behavior of 1.1.0: the dropdown entry, or the button of Sulu, controlled by `admin.merge_csv_export` as before.
+
 ## 1.1.0 - 2026-10-21
 
 ### Added

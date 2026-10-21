@@ -65,6 +65,7 @@ class SuluContentTransferExtension extends Extension implements PrependExtension
         $container->setParameter('sulu_content_transfer.instance_label', $config['instance_label']);
         $container->setParameter('sulu_content_transfer.admin.toolbar', $config['admin']['toolbar']);
         $container->setParameter('sulu_content_transfer.admin.merge_csv_export', $config['admin']['merge_csv_export']);
+        $container->setParameter('sulu_content_transfer.admin.article_csv_export', $config['admin']['article_csv_export']);
         $container->setParameter('sulu_content_transfer.limits.max_package_size', $config['limits']['max_package_size']);
         $container->setParameter('sulu_content_transfer.limits.max_files', $config['limits']['max_files']);
         $container->setParameter('sulu_content_transfer.work_dir', $config['work_dir']);

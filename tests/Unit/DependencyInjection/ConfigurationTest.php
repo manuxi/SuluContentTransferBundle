@@ -22,14 +22,16 @@ class ConfigurationTest extends TestCase
         $this->assertSame('%kernel.project_dir%/var/content-transfer', $config['work_dir']);
         $this->assertSame('dropdown', $config['admin']['toolbar']);
         $this->assertTrue($config['admin']['merge_csv_export']);
+        $this->assertFalse($config['admin']['article_csv_export']);
     }
 
     public function testAdminOptionsAreTaken(): void
     {
-        $config = $this->process(['admin' => ['toolbar' => 'buttons', 'merge_csv_export' => false]]);
+        $config = $this->process(['admin' => ['toolbar' => 'buttons', 'merge_csv_export' => false, 'article_csv_export' => true]]);
 
         $this->assertSame('buttons', $config['admin']['toolbar']);
         $this->assertFalse($config['admin']['merge_csv_export']);
+        $this->assertTrue($config['admin']['article_csv_export']);
     }
 
     public function testValuesAreTaken(): void
@@ -80,6 +82,7 @@ class ConfigurationTest extends TestCase
         yield 'empty work directory' => [['work_dir' => '']];
         yield 'unknown toolbar' => [['admin' => ['toolbar' => 'ribbon']]];
         yield 'csv merge that is no boolean' => [['admin' => ['merge_csv_export' => 'sometimes']]];
+        yield 'article csv export that is no boolean' => [['admin' => ['article_csv_export' => 'yes please']]];
         yield 'unknown option' => [['something' => true]];
     }
 

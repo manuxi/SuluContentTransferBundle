@@ -7,6 +7,7 @@ namespace Manuxi\SuluContentTransferBundle\Tests\Unit\Admin;
 use Manuxi\SuluContentTransferBundle\Admin\ContentTransferAdmin;
 use Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Sulu\Article\Infrastructure\Sulu\Admin\ArticleAdmin;
 use Sulu\Bundle\AdminBundle\Admin\View\ListViewBuilderInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
@@ -25,7 +26,7 @@ class ContentTransferAdminTest extends TestCase
     {
         $views = $this->views();
 
-        $this->admin([])->configureViews($views);
+        $this->admin([], csvExport: true)->configureViews($views);
 
         $this->assertSame('sulu_content_transfer.transfer', ContentTransferAdmin::TRANSFER_TOOLBAR_ACTION);
         $this->assertSame([['csv', 'export', 'import']], array_values($this->entries($views, 'sulu_article.article.list_blog')));
@@ -35,7 +36,7 @@ class ContentTransferAdminTest extends TestCase
     {
         $views = $this->views();
 
-        $this->admin([])->configureViews($views);
+        $this->admin([], csvExport: true)->configureViews($views);
 
         foreach (['sulu_article.article.list_blog', 'sulu_article.article.list_faq'] as $name) {
             $this->assertSame(['sulu_admin.add', 'sulu_admin.delete', self::TRANSFER, 'sulu_bulk_actions.actions'], $this->actionTypes($views, $name), $name);
@@ -67,7 +68,7 @@ class ContentTransferAdminTest extends TestCase
     {
         $views = $this->views();
 
-        $this->admin([], mergeCsvExport: false)->configureViews($views);
+        $this->admin([], mergeCsvExport: false, csvExport: true)->configureViews($views);
 
         $name = 'sulu_article.article.list_blog';
         $this->assertSame(['sulu_admin.add', 'sulu_admin.delete', 'sulu_admin.export', 'sulu_bulk_actions.actions', self::TRANSFER], $this->actionTypes($views, $name));
@@ -78,7 +79,7 @@ class ContentTransferAdminTest extends TestCase
     {
         $views = $this->views();
 
-        $this->admin([], toolbar: 'buttons')->configureViews($views);
+        $this->admin([], toolbar: 'buttons', csvExport: true)->configureViews($views);
 
         foreach (['sulu_article.article.list_blog', 'sulu_article.article.list_faq'] as $name) {
             $this->assertSame(
@@ -107,7 +108,7 @@ class ContentTransferAdminTest extends TestCase
 
         // without the view permission Sulu has no CSV export in the list either
         $views = $this->views(csvFor: ['sulu_article.article.list_blog']);
-        $this->admin([$faq.':'.PermissionTypes::VIEW])->configureViews($views);
+        $this->admin([$faq.':'.PermissionTypes::VIEW], csvExport: true)->configureViews($views);
 
         $this->assertSame(['csv', 'export', 'import'], $this->entries($views, 'sulu_article.article.list_blog')[self::TRANSFER]);
         $this->assertSame(['import'], $this->entries($views, 'sulu_article.article.list_faq')[self::TRANSFER]);
@@ -120,12 +121,12 @@ class ContentTransferAdminTest extends TestCase
         $faq = ArticleAdmin::getArticleSecurityContext('faq');
 
         $views = $this->views();
-        $this->admin([$blog.':'.PermissionTypes::ADD, $faq.':'.PermissionTypes::EDIT])->configureViews($views);
+        $this->admin([$blog.':'.PermissionTypes::ADD, $faq.':'.PermissionTypes::EDIT], csvExport: true)->configureViews($views);
         $this->assertSame(['csv', 'export', 'import'], $this->entries($views, 'sulu_article.article.list_blog')[self::TRANSFER]);
         $this->assertSame(['csv', 'export', 'import'], $this->entries($views, 'sulu_article.article.list_faq')[self::TRANSFER]);
 
         $views = $this->views();
-        $this->admin([$blog.':'.PermissionTypes::ADD, $blog.':'.PermissionTypes::EDIT])->configureViews($views);
+        $this->admin([$blog.':'.PermissionTypes::ADD, $blog.':'.PermissionTypes::EDIT], csvExport: true)->configureViews($views);
         $this->assertSame(['csv', 'export'], $this->entries($views, 'sulu_article.article.list_blog')[self::TRANSFER]);
     }
 
@@ -138,7 +139,7 @@ class ContentTransferAdminTest extends TestCase
             $blog.':'.PermissionTypes::VIEW,
             $blog.':'.PermissionTypes::ADD,
             $blog.':'.PermissionTypes::EDIT,
-        ])->configureViews($views);
+        ], csvExport: true)->configureViews($views);
 
         // no dropdown without an entry; Sulu's own CSV button is not touched
         $this->assertSame(['sulu_admin.add', 'sulu_admin.delete', 'sulu_admin.export', 'sulu_bulk_actions.actions'], $this->actionTypes($views, 'sulu_article.article.list_blog'));
@@ -156,6 +157,102 @@ class ContentTransferAdminTest extends TestCase
         ], toolbar: 'buttons')->configureViews($views);
 
         $this->assertSame([], $this->actionTypes($views, 'sulu_article.article.list_blog'));
+    }
+
+    public function testArticleListsDoNotOfferTheCsvExportByDefault(): void
+    {
+        $views = $this->views();
+
+        $this->admin([])->configureViews($views);
+
+        foreach (['sulu_article.article.list_blog', 'sulu_article.article.list_faq'] as $name) {
+            $this->assertSame(['sulu_admin.add', 'sulu_admin.delete', self::TRANSFER, 'sulu_bulk_actions.actions'], $this->actionTypes($views, $name), $name);
+            $this->assertSame(['export', 'import'], $this->entries($views, $name)[self::TRANSFER], $name);
+        }
+    }
+
+    public function testTheMergeOptionDoesNotBringTheCsvExportBackByItself(): void
+    {
+        $views = $this->views();
+
+        $this->admin([], mergeCsvExport: false)->configureViews($views);
+
+        $name = 'sulu_article.article.list_blog';
+        $this->assertSame(['sulu_admin.add', 'sulu_admin.delete', self::TRANSFER, 'sulu_bulk_actions.actions'], $this->actionTypes($views, $name));
+        $this->assertSame(['export', 'import'], $this->entries($views, $name)[self::TRANSFER]);
+    }
+
+    public function testButtonsTakeOutTheCsvExportByDefault(): void
+    {
+        $views = $this->views();
+
+        $this->admin([], toolbar: 'buttons')->configureViews($views);
+
+        foreach (['sulu_article.article.list_blog', 'sulu_article.article.list_faq'] as $name) {
+            $this->assertSame(
+                ['sulu_admin.add', 'sulu_admin.delete', 'sulu_bulk_actions.actions', 'sulu_content_transfer.export', 'sulu_content_transfer.import'],
+                $this->actionTypes($views, $name),
+                $name,
+            );
+        }
+    }
+
+    public function testTheCsvExportIsTakenOutEvenWhenTheUserHasNoEntry(): void
+    {
+        $blog = ArticleAdmin::getArticleSecurityContext('blog');
+        $denied = [
+            $blog.':'.PermissionTypes::VIEW,
+            $blog.':'.PermissionTypes::ADD,
+            $blog.':'.PermissionTypes::EDIT,
+        ];
+
+        foreach (['dropdown', 'buttons'] as $toolbar) {
+            $views = $this->views();
+            $this->admin($denied, toolbar: $toolbar)->configureViews($views);
+
+            $this->assertSame(['sulu_admin.add', 'sulu_admin.delete', 'sulu_bulk_actions.actions'], $this->actionTypes($views, 'sulu_article.article.list_blog'), $toolbar);
+        }
+    }
+
+    public function testListsOfOtherResourcesKeepTheCsvExport(): void
+    {
+        foreach (['dropdown', 'buttons'] as $toolbar) {
+            $views = $this->views();
+            $views->add(
+                (new ViewBuilderFactory())->createListViewBuilder('sulu_contact.contacts_list', '/contacts')
+                    ->setResourceKey('contacts')->setListKey('contacts')->addListAdapters(['table'])
+                    ->addToolbarActions([new ToolbarAction('sulu_admin.add'), new ToolbarAction('sulu_admin.export')]),
+            );
+
+            $this->admin([], toolbar: $toolbar)->configureViews($views);
+
+            $this->assertSame(['sulu_admin.add', 'sulu_admin.export'], $this->actionTypes($views, 'sulu_contact.contacts_list'), $toolbar);
+        }
+    }
+
+    public function testCsvExportStaysAndIsLoggedWhenTheListCannotBeChanged(): void
+    {
+        $builder = $this->createMock(ListViewBuilderInterface::class);
+        $builder->method('getName')->willReturn('sulu_article.article.list_blog');
+        $builder->expects($this->once())->method('addToolbarActions');
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('notice')->with($this->stringContains('CSV export'), ['list' => 'sulu_article.article.list_blog']);
+        $views = new ViewCollection();
+        $views->add($builder);
+
+        $this->admin([], logger: $logger)->configureViews($views);
+    }
+
+    public function testNothingIsLoggedWhenTheCsvExportMayStay(): void
+    {
+        $builder = $this->createMock(ListViewBuilderInterface::class);
+        $builder->method('getName')->willReturn('sulu_article.article.list_blog');
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method($this->anything());
+        $views = new ViewCollection();
+        $views->add($builder);
+
+        $this->admin([], toolbar: 'buttons', csvExport: true, logger: $logger)->configureViews($views);
     }
 
     public function testActionsOfOtherAdminsStay(): void
@@ -201,7 +298,7 @@ class ContentTransferAdminTest extends TestCase
     /**
      * @param list<string> $denied "<context>:<permission>" that the user does not have
      */
-    private function admin(array $denied, string $toolbar = 'dropdown', bool $mergeCsvExport = true): ContentTransferAdmin
+    private function admin(array $denied, string $toolbar = 'dropdown', bool $mergeCsvExport = true, bool $csvExport = false, ?LoggerInterface $logger = null): ContentTransferAdmin
     {
         $checker = $this->createMock(SecurityCheckerInterface::class);
         $checker->method('hasPermission')->willReturnCallback(
@@ -214,7 +311,7 @@ class ContentTransferAdminTest extends TestCase
             'faq' => new FormGroup('faq', 'FAQ', ['faq-question']),
         ]);
 
-        return new ContentTransferAdmin($checker, new ArticleSecurityContexts($provider), $toolbar, $mergeCsvExport);
+        return new ContentTransferAdmin($checker, new ArticleSecurityContexts($provider), $toolbar, $mergeCsvExport, $csvExport, $logger);
     }
 
     /**
