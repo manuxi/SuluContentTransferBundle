@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluContentTransferBundle\Admin;
 
 use Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts;
+use Psr\Log\LoggerInterface;
 use Sulu\Bundle\AdminBundle\Admin\Admin;
 use Sulu\Bundle\AdminBundle\Admin\View\ListViewBuilderInterface;
 use Sulu\Bundle\AdminBundle\Admin\View\ToolbarAction;
@@ -15,8 +16,12 @@ use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 
 /**
  * Adds the package export and import to the article lists of every article group. By default (toolbar "dropdown") one
- * dropdown "Export/Import" takes the place of the CSV export of Sulu, with the entries "Export list as CSV", "Export
- * package" and "Import package". With the toolbar "buttons" the list gets the two single buttons of version 1.0 instead.
+ * dropdown "Export/Import" takes the place of the CSV export of Sulu, with the entries "Export package" and "Import
+ * package". With the toolbar "buttons" the list gets the two single buttons of version 1.0 instead.
+ *
+ * The CSV export of Sulu does not work for articles in Sulu 3.0 (the article list always answers with JSON). It is
+ * removed from the article lists unless the option "article_csv_export" is set; then the dropdown has the entry
+ * "Export list as CSV" as well (or Sulu's button stays, as before). Other lists are not touched.
  *
  * Export is offered to users who may view articles in the security context of that group, import to users who may add
  * or edit them; the server checks every article again. An entry the user may not use is not offered; without any entry
@@ -42,6 +47,8 @@ class ContentTransferAdmin extends Admin
         private readonly ArticleSecurityContexts $contexts,
         private readonly string $toolbar = self::TOOLBAR_DROPDOWN,
         private readonly bool $mergeCsvExport = true,
+        private readonly bool $articleCsvExport = false,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -69,61 +76,71 @@ class ContentTransferAdmin extends Admin
             $canImport = $this->securityChecker->hasPermission($context, PermissionTypes::ADD)
                 || $this->securityChecker->hasPermission($context, PermissionTypes::EDIT);
 
-            if (self::TOOLBAR_BUTTONS === $this->toolbar) {
-                $actions = [];
-                if ($canExport) {
-                    $actions[] = new ToolbarAction(self::EXPORT_TOOLBAR_ACTION);
-                }
-                if ($canImport) {
-                    $actions[] = new ToolbarAction(self::IMPORT_TOOLBAR_ACTION);
-                }
-                if ([] !== $actions) {
-                    $viewBuilder->addToolbarActions($actions);
-                }
-
-                continue;
-            }
-
-            $entries = [];
-            if ($canExport) {
-                $entries[] = self::ENTRY_EXPORT;
-            }
-            if ($canImport) {
-                $entries[] = self::ENTRY_IMPORT;
-            }
-            if ([] === $entries) {
-                continue;
-            }
-
-            $this->addDropdown($viewBuilder, $entries);
+            $this->configureList($viewBuilder, $canExport, $canImport);
         }
     }
 
     /**
-     * Puts the dropdown in the place of the CSV export of Sulu (and adds that export as its first entry), or at the
-     * end of the toolbar if the list has none or the CSV export stays a button of its own.
-     *
-     * @param list<string> $entries
+     * Sets up one article list. The CSV export of Sulu does not work for articles (their list always answers with JSON),
+     * so unless the option "article_csv_export" is set the button is taken out. The dropdown (or the two buttons) offer
+     * what the user may do; the CSV entry of the dropdown only exists with the option set.
      */
-    private function addDropdown(ListViewBuilderInterface $viewBuilder, array $entries): void
+    private function configureList(ListViewBuilderInterface $viewBuilder, bool $canExport, bool $canImport): void
     {
-        $view = $this->mergeCsvExport ? $this->viewOf($viewBuilder) : null;
+        $dropdown = self::TOOLBAR_DROPDOWN === $this->toolbar;
 
-        if (null !== $view) {
-            $toolbarActions = $view->getOption('toolbarActions');
-            $toolbarActions = \is_array($toolbarActions) ? array_values($toolbarActions) : [];
-            $csvIndex = $this->indexOfCsvExport($toolbarActions);
+        $entries = [];
+        if ($canExport) {
+            $entries[] = self::ENTRY_EXPORT;
+        }
+        if ($canImport) {
+            $entries[] = self::ENTRY_IMPORT;
+        }
 
-            if (null !== $csvIndex) {
-                array_unshift($entries, self::ENTRY_CSV);
-                $toolbarActions[$csvIndex] = new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries]);
-                $view->setOption('toolbarActions', $toolbarActions);
-
-                return;
+        // the dropdown takes the place of the CSV button of Sulu, and the button is removed if it must not stay
+        $takesPlace = $dropdown && ($this->mergeCsvExport || !$this->articleCsvExport);
+        $view = null;
+        $toolbarActions = [];
+        $csvIndex = null;
+        if (!$this->articleCsvExport || $takesPlace) {
+            $view = $this->viewOf($viewBuilder);
+            if (null === $view) {
+                $this->logger?->notice('The toolbar of the article list "{list}" could not be changed, the CSV export button of Sulu stays.', ['list' => $viewBuilder->getName()]);
+            } else {
+                $toolbarActions = $view->getOption('toolbarActions');
+                $toolbarActions = \is_array($toolbarActions) ? array_values($toolbarActions) : [];
+                $csvIndex = $this->indexOfCsvExport($toolbarActions);
             }
         }
 
-        $viewBuilder->addToolbarActions([new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries])]);
+        if ($dropdown) {
+            if (null !== $csvIndex && $this->articleCsvExport && $this->mergeCsvExport && [] !== $entries) {
+                array_unshift($entries, self::ENTRY_CSV);
+            }
+            $added = [] === $entries ? [] : [new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries])];
+        } else {
+            $added = [];
+            if ($canExport) {
+                $added[] = new ToolbarAction(self::EXPORT_TOOLBAR_ACTION);
+            }
+            if ($canImport) {
+                $added[] = new ToolbarAction(self::IMPORT_TOOLBAR_ACTION);
+            }
+        }
+
+        if (null !== $view && null !== $csvIndex && (!$this->articleCsvExport || [] !== $added)) {
+            if ($takesPlace && [] !== $added) {
+                array_splice($toolbarActions, $csvIndex, 1, $added);
+                $added = [];
+            } else {
+                array_splice($toolbarActions, $csvIndex, 1);
+            }
+            $view->setOption('toolbarActions', $toolbarActions);
+        }
+
+        if ([] !== $added) {
+            $viewBuilder->addToolbarActions($added);
+        }
     }
 
     /**

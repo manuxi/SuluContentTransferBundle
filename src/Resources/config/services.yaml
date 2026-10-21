@@ -331,6 +331,8 @@ services:
             - '@Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts'
             - '%sulu_content_transfer.admin.toolbar%'
             - '%sulu_content_transfer.admin.merge_csv_export%'
+            - '%sulu_content_transfer.admin.article_csv_export%'
+            - '@?logger'
         tags:
             - { name: sulu.admin }
             - { name: sulu.context, context: admin }
