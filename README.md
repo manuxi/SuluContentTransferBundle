@@ -12,7 +12,7 @@ Move articles from one Sulu system to another as a single file: write them on yo
 
 ![Export and import in the article list](docs/img/toolbar.en.png)
 
-- One dropdown **Export/Import** in the article lists. It also holds the CSV export of Sulu, so the toolbar has one entry less to look at.
+- One dropdown **Export/Import** in the article lists with the entries "Export package" and "Import package". It takes the place of the CSV export of Sulu, which does not work for articles (see [Toolbar](#toolbar)).
 - Export in the admin: select articles, choose languages, version and whether the image files travel along, download one `.sulu-transfer.zip`.
 - Import in the admin in three steps: choose the file, review the preview, read the report. The same on the console, with `--dry-run` for a look without writing.
 - Articles keep their UUID, so links stay valid and a later import updates the same article. Images are matched by SHA-256 and are not duplicated.
@@ -69,7 +69,7 @@ The bundle has no security context of its own. It uses the ones that already exi
 - The export checks the articles only. The images and the contact data (name, e-mail address) that the articles refer to travel with them, whatever the permissions for the media library and for contacts say.
 - Categories and tags that do not exist on the target system are created by the import without a separate check of the permission for categories and tags. The preview lists them before anything is written.
 
-The entries of the dropdown only appear where the user may use them. Without a permission for any of the package entries, the list keeps the CSV button of Sulu and gets no dropdown.
+The entries of the dropdown only appear where the user may use them. Without a permission for any of the package entries, the list gets no dropdown.
 
 ## Export
 
@@ -136,13 +136,14 @@ The dropdown **Export/Import** takes the place of the button "Export" of Sulu in
 
 | Entry | Does | Active |
 | --- | --- | --- |
-| Export list as CSV | opens the CSV dialog of Sulu (same list, same download) | when the list has rows |
 | Export package | opens the package export | when articles are selected; shows their number |
 | Import package | opens the package import | always |
 
-If a list has no CSV button of Sulu (the user may not view the articles), the dropdown is added at the end of the toolbar and holds the package entries only.
+If a list has no such button, the dropdown is added at the end of the toolbar.
 
-Two options change this, see [Configuration](#configuration): `admin.toolbar: buttons` brings back the two single buttons of version 1.0 and leaves the CSV button of Sulu alone. `admin.merge_csv_export: false` keeps the CSV button where it is; the dropdown then holds the two package entries. The toolbar actions of version 1.0 (`sulu_content_transfer.export` and `sulu_content_transfer.import`) stay registered for projects that add them to their own lists, the dropdown is `sulu_content_transfer.transfer`.
+**The CSV export of Sulu is hidden in the article lists.** It does not work for articles: its dialog calls `/admin/api/articles.csv`, but the article list of Sulu (3.0.x, checked with 3.0.9) always answers with JSON, so nothing is downloaded. Lists of other areas (contacts, categories and so on) keep their button. With `admin.article_csv_export: true` the export comes back, as the entry "Export list as CSV" in the dropdown (active when the list has rows) or, with `merge_csv_export: false` or `toolbar: buttons`, as the button of Sulu. That only makes sense where the article list can deliver CSV, for example in a later version of Sulu.
+
+Further options, see [Configuration](#configuration): `admin.toolbar: buttons` brings back the two single buttons of version 1.0. `admin.merge_csv_export: false` is only used together with `article_csv_export: true` and leaves the CSV button of Sulu where it is. The toolbar actions of version 1.0 (`sulu_content_transfer.export` and `sulu_content_transfer.import`) stay registered for projects that add them to their own lists, the dropdown is `sulu_content_transfer.transfer`.
 
 ## Configuration
 
@@ -152,7 +153,8 @@ sulu_content_transfer:
     instance_label: ~           # readable name in packages and reports; default: host of the request, "cli" on the console
     admin:
         toolbar: dropdown       # dropdown: one dropdown "Export/Import"; buttons: two single buttons (as in version 1.0)
-        merge_csv_export: true  # only with dropdown: true takes the CSV export of Sulu into the dropdown, false leaves its button
+        article_csv_export: false  # the CSV export of Sulu does not work for articles; true brings its button or dropdown entry back
+        merge_csv_export: true  # only with article_csv_export and dropdown: true takes the CSV export of Sulu into the dropdown, false leaves its button
     limits:
         max_package_size: 256M  # size of a package, for the file and for the unpacked content
         max_files: 2000         # number of files in a package

@@ -12,7 +12,7 @@ Artikel als eine einzige Datei von einem Sulu-System auf ein anderes bringen: lo
 
 ![Export und Import in der Artikelliste](docs/img/toolbar.de.png)
 
-- Ein Dropdown **Export/Import** in den Artikellisten. Es nimmt auch den CSV-Export von Sulu auf, die Werkzeugleiste hat also einen Knopf weniger.
+- Ein Dropdown **Export/Import** in den Artikellisten mit den Einträgen „Paket exportieren“ und „Paket importieren“. Es ersetzt den CSV-Export von Sulu, der für Artikel nicht funktioniert (siehe [Werkzeugleiste](#werkzeugleiste)).
 - Export im Admin: Artikel markieren, Sprachen und Fassung wählen, entscheiden, ob die Bilddateien mitgehen, und eine `.sulu-transfer.zip` herunterladen.
 - Import im Admin in drei Schritten: Datei wählen, Vorschau prüfen, Bericht lesen. Dasselbe in der Konsole, mit `--dry-run` zum Ansehen ohne Schreiben.
 - Artikel behalten ihre UUID. Links bleiben gültig, und ein späterer Import aktualisiert denselben Artikel. Bilder werden über SHA-256 zugeordnet und nicht doppelt angelegt.
@@ -69,7 +69,7 @@ Das Bundle hat keinen eigenen Sicherheitskontext. Es nutzt die vorhandenen, und 
 - Der Export prüft nur die Artikel. Die Bilder und die Kontaktdaten (Name, E-Mail-Adresse), auf die die Artikel verweisen, gehen mit, egal was die Berechtigungen für die Medienverwaltung und für Kontakte sagen.
 - Kategorien und Tags, die es auf dem Zielsystem nicht gibt, legt der Import an, ohne die Berechtigung für Kategorien und Tags gesondert zu prüfen. Die Vorschau nennt sie vorher.
 
-Die Einträge des Dropdowns erscheinen nur dort, wo die Person sie benutzen darf. Fehlt jede Berechtigung für die Paket-Einträge, behält die Liste den CSV-Knopf von Sulu und bekommt kein Dropdown.
+Die Einträge des Dropdowns erscheinen nur dort, wo die Person sie benutzen darf. Fehlt jede Berechtigung für die Paket-Einträge, bekommt die Liste kein Dropdown.
 
 ## Export
 
@@ -136,13 +136,14 @@ Das Dropdown **Export/Import** ersetzt in den Artikellisten aller Gruppen den Kn
 
 | Eintrag | Tut | Aktiv |
 | --- | --- | --- |
-| Liste als CSV exportieren | öffnet den CSV-Dialog von Sulu (dieselbe Liste, derselbe Download) | wenn die Liste Zeilen hat |
 | Paket exportieren | öffnet den Paket-Export | wenn Artikel markiert sind; zeigt deren Anzahl |
 | Paket importieren | öffnet den Paket-Import | immer |
 
-Hat eine Liste keinen CSV-Knopf von Sulu (die Person darf die Artikel nicht ansehen), kommt das Dropdown ans Ende der Werkzeugleiste und enthält nur die Paket-Einträge.
+Hat eine Liste keinen solchen Knopf, kommt das Dropdown ans Ende der Werkzeugleiste.
 
-Zwei Optionen ändern das, siehe [Konfiguration](#konfiguration): `admin.toolbar: buttons` bringt die beiden Einzelknöpfe aus Version 1.0 zurück und lässt den CSV-Knopf von Sulu in Ruhe. `admin.merge_csv_export: false` lässt den CSV-Knopf stehen, das Dropdown enthält dann nur die beiden Paket-Einträge. Die Werkzeugleisten-Aktionen aus Version 1.0 (`sulu_content_transfer.export` und `sulu_content_transfer.import`) bleiben registriert, für Projekte, die sie in eigene Listen einhängen. Das Dropdown heißt `sulu_content_transfer.transfer`.
+**Der CSV-Export von Sulu ist in den Artikellisten ausgeblendet.** Er funktioniert für Artikel nicht: Sein Dialog ruft `/admin/api/articles.csv` auf, aber die Artikelliste von Sulu (3.0.x, geprüft mit 3.0.9) antwortet immer mit JSON, es gibt also keinen Download. Listen anderer Bereiche (Kontakte, Kategorien und so weiter) behalten ihren Knopf. Mit `admin.article_csv_export: true` kommt der Export zurück, als Eintrag „Liste als CSV exportieren“ im Dropdown (aktiv, wenn die Liste Zeilen hat) oder, mit `merge_csv_export: false` oder `toolbar: buttons`, als Knopf von Sulu. Das ergibt nur Sinn, wo die Artikelliste CSV liefern kann, zum Beispiel in einer späteren Sulu-Version.
+
+Weitere Optionen, siehe [Konfiguration](#konfiguration): `admin.toolbar: buttons` bringt die beiden Einzelknöpfe aus Version 1.0 zurück. `admin.merge_csv_export: false` gilt nur zusammen mit `article_csv_export: true` und lässt den CSV-Knopf von Sulu stehen. Die Werkzeugleisten-Aktionen aus Version 1.0 (`sulu_content_transfer.export` und `sulu_content_transfer.import`) bleiben registriert, für Projekte, die sie in eigene Listen einhängen. Das Dropdown heißt `sulu_content_transfer.transfer`.
 
 ## Konfiguration
 
@@ -152,7 +153,8 @@ sulu_content_transfer:
     instance_label: ~           # lesbarer Name in Paketen und Berichten; Standard: Host der Anfrage, in der Konsole "cli"
     admin:
         toolbar: dropdown       # dropdown: ein Dropdown "Export/Import"; buttons: zwei Einzelknöpfe (wie in Version 1.0)
-        merge_csv_export: true  # nur bei dropdown: true nimmt den CSV-Export von Sulu ins Dropdown, false lässt dessen Knopf stehen
+        article_csv_export: false  # der CSV-Export von Sulu funktioniert für Artikel nicht; true bringt Knopf oder Dropdown-Eintrag zurück
+        merge_csv_export: true  # nur mit article_csv_export und dropdown: true nimmt den CSV-Export von Sulu ins Dropdown, false lässt dessen Knopf stehen
     limits:
         max_package_size: 256M  # Größe eines Pakets, für die Datei und für den entpackten Inhalt
         max_files: 2000         # Anzahl der Dateien in einem Paket
