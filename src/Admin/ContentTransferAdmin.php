@@ -108,19 +108,22 @@ class ContentTransferAdmin extends Admin
     private function addDropdown(ListViewBuilderInterface $viewBuilder, array $entries): void
     {
         $view = $this->mergeCsvExport ? $this->viewOf($viewBuilder) : null;
-        $toolbarActions = $view?->getOption('toolbarActions');
-        $toolbarActions = \is_array($toolbarActions) ? array_values($toolbarActions) : [];
-        $csvIndex = null !== $view ? $this->indexOfCsvExport($toolbarActions) : null;
 
-        if (null === $csvIndex || null === $view) {
-            $viewBuilder->addToolbarActions([new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries])]);
+        if (null !== $view) {
+            $toolbarActions = $view->getOption('toolbarActions');
+            $toolbarActions = \is_array($toolbarActions) ? array_values($toolbarActions) : [];
+            $csvIndex = $this->indexOfCsvExport($toolbarActions);
 
-            return;
+            if (null !== $csvIndex) {
+                array_unshift($entries, self::ENTRY_CSV);
+                $toolbarActions[$csvIndex] = new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries]);
+                $view->setOption('toolbarActions', $toolbarActions);
+
+                return;
+            }
         }
 
-        array_unshift($entries, self::ENTRY_CSV);
-        $toolbarActions[$csvIndex] = new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries]);
-        $view->setOption('toolbarActions', $toolbarActions);
+        $viewBuilder->addToolbarActions([new ToolbarAction(self::TRANSFER_TOOLBAR_ACTION, ['entries' => $entries])]);
     }
 
     /**
