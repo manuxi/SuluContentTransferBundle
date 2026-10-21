@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 - 2026-10-21
+
+### Added
+
+- One dropdown "Export/Import" (`sulu_content_transfer.transfer`) in the article lists of every group, in place of the three buttons "Export" (CSV of Sulu), "Export package" and "Import package". Entries: "Export list as CSV", "Export package (n)" and "Import package". An entry the user may not use does not appear; without any package entry the list stays as it is.
+- The CSV export of Sulu is part of the dropdown: it opens the CSV dialog of Sulu itself (same list, same download, no CSV logic of its own).
+- Option `admin.toolbar` (`dropdown`, default, or `buttons`; `buttons` is the behavior of 1.0.0) and option `admin.merge_csv_export` (default `true`; `false` leaves the CSV button of Sulu where it is and the dropdown holds the package entries only).
+
+### Changed
+
+- The toolbar actions `sulu_content_transfer.export` and `sulu_content_transfer.import` stay registered, but the article lists no longer get them by default.
+
 ## 1.0.0 - 2026-10-19
 
 First release.
