@@ -329,6 +329,8 @@ services:
         arguments:
             - '@sulu_security.security_checker'
             - '@Manuxi\SuluContentTransferBundle\Security\ArticleSecurityContexts'
+            - '%sulu_content_transfer.admin.toolbar%'
+            - '%sulu_content_transfer.admin.merge_csv_export%'
         tags:
             - { name: sulu.admin }
             - { name: sulu.context, context: admin }
