@@ -12,6 +12,7 @@ Artikel als eine einzige Datei von einem Sulu-System auf ein anderes bringen: lo
 
 ![Export und Import in der Artikelliste](docs/img/toolbar.de.png)
 
+- Ein Dropdown **Export/Import** in den Artikellisten. Es nimmt auch den CSV-Export von Sulu auf, die Werkzeugleiste hat also einen Knopf weniger.
 - Export im Admin: Artikel markieren, Sprachen und Fassung wählen, entscheiden, ob die Bilddateien mitgehen, und eine `.sulu-transfer.zip` herunterladen.
 - Import im Admin in drei Schritten: Datei wählen, Vorschau prüfen, Bericht lesen. Dasselbe in der Konsole, mit `--dry-run` zum Ansehen ohne Schreiben.
 - Artikel behalten ihre UUID. Links bleiben gültig, und ein späterer Import aktualisiert denselben Artikel. Bilder werden über SHA-256 zugeordnet und nicht doppelt angelegt.
@@ -68,11 +69,11 @@ Das Bundle hat keinen eigenen Sicherheitskontext. Es nutzt die vorhandenen, und 
 - Der Export prüft nur die Artikel. Die Bilder und die Kontaktdaten (Name, E-Mail-Adresse), auf die die Artikel verweisen, gehen mit, egal was die Berechtigungen für die Medienverwaltung und für Kontakte sagen.
 - Kategorien und Tags, die es auf dem Zielsystem nicht gibt, legt der Import an, ohne die Berechtigung für Kategorien und Tags gesondert zu prüfen. Die Vorschau nennt sie vorher.
 
-Die Schaltflächen erscheinen nur in Listen, in denen die Person sie benutzen darf.
+Die Einträge des Dropdowns erscheinen nur dort, wo die Person sie benutzen darf. Fehlt jede Berechtigung für die Paket-Einträge, behält die Liste den CSV-Knopf von Sulu und bekommt kein Dropdown.
 
 ## Export
 
-In einer Liste einen oder mehrere Artikel markieren und auf **Paket exportieren** klicken:
+In einer Liste einen oder mehrere Artikel markieren, das Dropdown **Export/Import** öffnen und auf **Paket exportieren** klicken:
 
 ![Exportdialog](docs/img/export-dialog.de.png)
 
@@ -85,7 +86,7 @@ Heraus kommt eine einzige Datei, zum Beispiel `2026-10-19-erste-schritte.sulu-tr
 
 ## Import
 
-Auf **Paket importieren** klicken. Schritt 1: Datei wählen.
+Das Dropdown **Export/Import** öffnen und auf **Paket importieren** klicken. Schritt 1: Datei wählen.
 
 ![Import, Schritt 1](docs/img/import-step1.de.png)
 
@@ -129,12 +130,29 @@ php bin/adminconsole sulu:content-transfer:import tutorials.sulu-transfer.zip --
 
 Weitere Optionen des Imports: `--keep-status` (veröffentlichen, was in der Quelle veröffentlicht war), `--overwrite-media-meta` (Texte vorhandener Bilder ersetzen), `--action=<uuid>:create|update|copy|skip` (mehrfach möglich), `--locale=de` (mehrfach möglich), `--json`. `--user` ist der Sulu-Benutzer, der Ersteller und Bearbeiter von allem wird, was geschrieben wird. Die Konsole prüft keine Berechtigungen.
 
+## Werkzeugleiste
+
+Das Dropdown **Export/Import** ersetzt in den Artikellisten aller Gruppen den Knopf „Exportieren“ von Sulu:
+
+| Eintrag | Tut | Aktiv |
+| --- | --- | --- |
+| Liste als CSV exportieren | öffnet den CSV-Dialog von Sulu (dieselbe Liste, derselbe Download) | wenn die Liste Zeilen hat |
+| Paket exportieren | öffnet den Paket-Export | wenn Artikel markiert sind; zeigt deren Anzahl |
+| Paket importieren | öffnet den Paket-Import | immer |
+
+Hat eine Liste keinen CSV-Knopf von Sulu (die Person darf die Artikel nicht ansehen), kommt das Dropdown ans Ende der Werkzeugleiste und enthält nur die Paket-Einträge.
+
+Zwei Optionen ändern das, siehe [Konfiguration](#konfiguration): `admin.toolbar: buttons` bringt die beiden Einzelknöpfe aus Version 1.0 zurück und lässt den CSV-Knopf von Sulu in Ruhe. `admin.merge_csv_export: false` lässt den CSV-Knopf stehen, das Dropdown enthält dann nur die beiden Paket-Einträge. Die Werkzeugleisten-Aktionen aus Version 1.0 (`sulu_content_transfer.export` und `sulu_content_transfer.import`) bleiben registriert, für Projekte, die sie in eigene Listen einhängen. Das Dropdown heißt `sulu_content_transfer.transfer`.
+
 ## Konfiguration
 
 ```yaml
 sulu_content_transfer:
     instance_id: ~              # kennzeichnet dieses System als Quelle von Paketen; Standard: ein Hash von kernel.secret
     instance_label: ~           # lesbarer Name in Paketen und Berichten; Standard: Host der Anfrage, in der Konsole "cli"
+    admin:
+        toolbar: dropdown       # dropdown: ein Dropdown "Export/Import"; buttons: zwei Einzelknöpfe (wie in Version 1.0)
+        merge_csv_export: true  # nur bei dropdown: true nimmt den CSV-Export von Sulu ins Dropdown, false lässt dessen Knopf stehen
     limits:
         max_package_size: 256M  # Größe eines Pakets, für die Datei und für den entpackten Inhalt
         max_files: 2000         # Anzahl der Dateien in einem Paket

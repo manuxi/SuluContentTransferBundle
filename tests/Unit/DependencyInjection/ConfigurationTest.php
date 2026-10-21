@@ -20,6 +20,16 @@ class ConfigurationTest extends TestCase
         $this->assertSame(256 * 1024 * 1024, $config['limits']['max_package_size']);
         $this->assertSame(2000, $config['limits']['max_files']);
         $this->assertSame('%kernel.project_dir%/var/content-transfer', $config['work_dir']);
+        $this->assertSame('dropdown', $config['admin']['toolbar']);
+        $this->assertTrue($config['admin']['merge_csv_export']);
+    }
+
+    public function testAdminOptionsAreTaken(): void
+    {
+        $config = $this->process(['admin' => ['toolbar' => 'buttons', 'merge_csv_export' => false]]);
+
+        $this->assertSame('buttons', $config['admin']['toolbar']);
+        $this->assertFalse($config['admin']['merge_csv_export']);
     }
 
     public function testValuesAreTaken(): void
@@ -68,6 +78,8 @@ class ConfigurationTest extends TestCase
         yield 'size zero' => [['limits' => ['max_package_size' => 0]]];
         yield 'no files allowed' => [['limits' => ['max_files' => 0]]];
         yield 'empty work directory' => [['work_dir' => '']];
+        yield 'unknown toolbar' => [['admin' => ['toolbar' => 'ribbon']]];
+        yield 'csv merge that is no boolean' => [['admin' => ['merge_csv_export' => 'sometimes']]];
         yield 'unknown option' => [['something' => true]];
     }
 

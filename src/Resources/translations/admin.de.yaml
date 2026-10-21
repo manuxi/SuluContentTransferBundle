@@ -1,4 +1,9 @@
 sulu_content_transfer:
+    transfer: "Export/Import"
+    transfer_csv: "Liste als CSV exportieren"
+    transfer_export: "Paket exportieren"
+    transfer_export_count: "Paket exportieren ({count})"
+    transfer_import: "Paket importieren"
     export: "Paket exportieren"
     export_title: "Artikel exportieren ({count} ausgewählt)"
     export_confirm: "Exportieren"

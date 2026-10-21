@@ -33,6 +33,8 @@ class ExtensionTest extends TestCase
         $container = $this->container([]);
 
         $this->assertSame('/project/var/content-transfer', $container->getParameter('sulu_content_transfer.work_dir'));
+        $this->assertSame('dropdown', $container->getParameter('sulu_content_transfer.admin.toolbar'));
+        $this->assertTrue($container->getParameter('sulu_content_transfer.admin.merge_csv_export'));
         $this->assertInstanceOf(PackageReader::class, $container->get(PackageReader::class));
         $this->assertInstanceOf(PackageWriter::class, $container->get(PackageWriter::class));
 
@@ -52,7 +54,11 @@ class ExtensionTest extends TestCase
             'instance_label' => 'Staging',
             'limits' => ['max_package_size' => '10M', 'max_files' => 12],
             'work_dir' => '/data/transfer',
+            'admin' => ['toolbar' => 'buttons', 'merge_csv_export' => false],
         ]);
+
+        $this->assertSame('buttons', $container->getParameter('sulu_content_transfer.admin.toolbar'));
+        $this->assertFalse($container->getParameter('sulu_content_transfer.admin.merge_csv_export'));
 
         $limits = $container->get(PackageLimits::class);
         $this->assertSame(10 * 1024 * 1024, $limits->maxPackageSize);
